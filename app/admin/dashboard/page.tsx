@@ -70,7 +70,7 @@ export default function AdminDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
           <div>
             <h1 className="text-4xl font-extrabold text-emerald-900 tracking-tight">Panel Kontrol Permata</h1>
-            <p className="text-emerald-700 font-medium italic">Manajemen Verifikasi Akun & Pendampingan</p>
+            <p className="text-emerald-700 font-medium italic">Manajemen Verifikasi Peserta & Pendampingan</p>
           </div>
           
           <div className="flex flex-wrap items-center gap-3">
