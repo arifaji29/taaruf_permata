@@ -1,6 +1,7 @@
 import { createClient } from './utils/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import Navbar from '@/components/navbar'
 
 interface Peserta {
   id: string;
@@ -21,13 +22,13 @@ export default async function HomePage({
   const supabase = await createClient()
   const { gender } = await searchParams
 
-  // 1. Ambil data Auth User (Termasuk Metadata)
+  // 1. Ambil data Auth User
   const { data: { user } } = await supabase.auth.getUser()
   
-  // 2. Cek Status Admin Langsung dari Auth Metadata
+  // 2. Cek Status Admin
   const isAdmin = user?.app_metadata?.role === 'admin' || user?.user_metadata?.role === 'admin';
 
-  // 3. Ambil Profil Peserta spesifik untuk User yang sedang login
+  // 3. Ambil Profil Peserta
   let userProfileName = null;
   if (user) {
     const { data: profile } = await supabase
@@ -39,9 +40,9 @@ export default async function HomePage({
     userProfileName = profile?.nama;
   }
 
-  // 4. Logika Sapaan Dinamis
   const userName = userProfileName || user?.user_metadata?.nama || user?.email?.split('@')[0]
 
+  // 4. Server Action untuk Logout
   async function handleSignOut() {
     'use server'
     const supabase = await createClient()
@@ -49,7 +50,7 @@ export default async function HomePage({
     redirect('/')
   }
 
-  // 5. Query untuk daftar peserta
+  // 5. Query data peserta
   let query = supabase
     .from('peserta')
     .select('id, nama, bin_binti, jenis_kelamin, pekerjaan, kelompok, tanggal_lahir, avatar_url')
@@ -74,118 +75,97 @@ export default async function HomePage({
   if (error) console.error('Error fetching data:', error.message);
 
   return (
-    <main className="p-8 max-w-7xl mx-auto bg-gray-50 min-h-screen">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
-        <div>
-          <h1 className="text-4xl font-extrabold text-emerald-900 tracking-tight">Permata</h1>
-          <p className="text-emerald-700 font-medium italic">
-            {user ? (
-              <span>Selamat Datang, <span className="text-emerald-900 font-black">{userName}</span> ✨</span>
-            ) : (
-              "Database Taaruf Terpusat"
-            )}
-          </p>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-3">
-          {user ? (
-            <>
-              {/* Navigasi Admin */}
-              {isAdmin && (
-                <div className="flex items-center gap-2 mr-2 pr-4 border-r border-gray-200">
-                  <Link href="/admin/dashboard" className="bg-amber-50 text-amber-700 border border-amber-200 px-5 py-3 rounded-full font-bold hover:bg-amber-100 transition-all shadow-sm text-sm flex items-center gap-2">
-                    📊 Dashboard
-                  </Link>
-                  <Link href="/admin/tim-perkawinan" className="bg-indigo-50 text-indigo-700 border border-indigo-200 px-5 py-3 rounded-full font-bold hover:bg-indigo-100 transition-all shadow-sm text-sm flex items-center gap-2">
-                    🤝 Tim Perkawinan
-                  </Link>
-                </div>
-              )}
+    <main className="min-h-screen bg-slate-50 pb-32 relative overflow-x-hidden">
+      {/* Dekorasi Latar Belakang Glassmorphism */}
+      <div className="absolute top-0 left-0 w-full h-96 bg-linear-to-b from-emerald-500/20 to-transparent -z-10"></div>
+      <div className="absolute top-20 -right-20 w-80 h-80 bg-teal-300/20 rounded-full blur-3xl -z-10 animate-pulse"></div>
 
-              <form action={handleSignOut}>
-                <button type="submit" className="bg-white text-rose-600 border border-rose-100 px-6 py-3 rounded-full font-bold hover:bg-rose-50 transition-all shadow-sm text-sm">
-                  Keluar Akun
-                </button>
-              </form>
+      {/* Komponen Navigasi (Top & Bottom) */}
+      <Navbar 
+        userName={userName} 
+        isAdmin={isAdmin} 
+        handleSignOut={handleSignOut} 
+      />
 
-              {/* Logika Ganti Tombol ke Label Admin */}
-              {isAdmin ? (
-                <div className="bg-emerald-100 text-emerald-800 px-8 py-3 rounded-full font-black shadow-sm flex items-center gap-2 text-sm uppercase tracking-widest border border-emerald-200">
-                  🛡️ Admin
-                </div>
+      {/* Hero Greeting Section */}
+      <section className="px-6 pt-8 pb-4">
+        <div className="backdrop-blur-xl bg-white/40 border border-white/60 p-8 rounded-[2.5rem] shadow-2xl shadow-emerald-900/5 relative overflow-hidden">
+          <div className="relative z-10">
+            <h2 className="text-xl font-black text-slate-800 tracking-tighter leading-tight">
+              {user ? (
+                <>Assalamu'alaikum, <span className="text-emerald-700">{userName}</span> ✨</>
               ) : (
-                <Link href="/peserta/akun" className="bg-emerald-600 text-white px-8 py-3 rounded-full font-bold hover:bg-emerald-700 transition-all shadow-lg active:scale-95 flex items-center gap-2 text-sm">
-                  👤 Profil Saya
-                </Link>
+                <>Temukan Pasangan <br /><span className="text-emerald-700">Syar'i Anda</span></>
               )}
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="bg-white text-emerald-700 border border-emerald-200 px-6 py-3 rounded-full font-bold hover:bg-emerald-50 transition-all shadow-sm text-sm">Masuk</Link>
-              <Link href="/register" className="bg-white text-emerald-600 border border-emerald-600 px-6 py-3 rounded-full font-bold hover:bg-emerald-50 transition-all shadow-sm text-sm">Daftar Sekarang</Link>
-            </>
-          )}
+            </h2>
+          </div>
+          <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/20 rounded-full blur-xl"></div>
         </div>
-      </div>
+      </section>
 
-      {/* SISTEM FILTER VISUAL */}
-      <div className="flex flex-wrap gap-3 mb-8 bg-white p-2 rounded-2xl w-fit shadow-sm border border-emerald-50">
-        <Link href="/" className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${!gender ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-700 hover:bg-emerald-50'}`}>Semua</Link>
-        <Link href="/?gender=Laki-laki" className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${gender === 'Laki-laki' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-700 hover:bg-blue-50'}`}>Ikhwan</Link>
-        <Link href="/?gender=Perempuan" className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${gender === 'Perempuan' ? 'bg-rose-500 text-white shadow-md' : 'text-rose-700 hover:bg-rose-50'}`}>Akhwat</Link>
-      </div>
-
-      {/* GRID DISPLAY */}
-      {!peserta || peserta.length === 0 ? (
-        <div className="p-20 border-2 border-dashed border-emerald-200 rounded-3xl text-center bg-white shadow-sm">
-          <p className="text-emerald-800 text-xl font-medium italic">Data tidak ditemukan.</p>
+      {/* Konten Utama: Daftar Peserta */}
+      <div className="px-6 py-6">
+        <div className="flex items-center justify-between mb-8">
+          <h3 className="font-black text-slate-800 uppercase tracking-widest text-xs">Peserta Permata</h3>
+          <div className="flex bg-white/50 backdrop-blur-md p-1 rounded-full border border-white/80 shadow-sm">
+            <Link href="/" className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all ${!gender ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-700'}`}>Semua</Link>
+            <Link href="/?gender=Laki-laki" className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all ${gender === 'Laki-laki' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-700'}`}>Ikhwan</Link>
+            <Link href="/?gender=Perempuan" className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase transition-all ${gender === 'Perempuan' ? 'bg-rose-500 text-white shadow-md' : 'text-rose-700'}`}>Akhwat</Link>
+          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {peserta.map((p: Peserta) => (
-            <Link key={p.id} href={`/peserta/${p.id}`} className="bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all duration-500 overflow-hidden border border-emerald-50 group flex flex-col cursor-pointer">
-              <div className="relative h-56 bg-emerald-50 flex items-center justify-center overflow-hidden">
-                {p.avatar_url ? (
-                  <img src={p.avatar_url} alt={p.nama} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                ) : (
-                  <div className="flex flex-col items-center">
-                    <span className="text-emerald-200 text-7xl font-black uppercase select-none">{p.nama ? p.nama.charAt(0) : '?'}</span>
-                    <span className="text-emerald-600 text-[10px] font-bold mt-2 uppercase tracking-widest opacity-40">Tanpa Foto</span>
-                  </div>
-                )}
-                <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase shadow-sm ${
-                  p.jenis_kelamin === 'Laki-laki' ? 'bg-blue-100 text-blue-700' : 'bg-pink-100 text-pink-700'
-                }`}>
-                  {p.jenis_kelamin === 'Laki-laki' ? 'Ikhwan' : 'Akhwat'}
-                </div>
-              </div>
 
-              <div className="p-6 grow">
-                <h2 className="font-bold text-2xl text-gray-800 mb-1 truncate capitalize">{p.nama || "Tanpa Nama"}</h2>
-                <p className="text-xs text-emerald-600 font-bold mb-4 border-b border-emerald-50 pb-2 italic">
-                  {p.jenis_kelamin === 'Laki-laki' ? 'bin' : 'binti'} {p.bin_binti || "---"}
-                </p>
-                <div className="space-y-3 text-[13px] text-gray-600 font-medium">
-                  <div className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span>Umur: <span className="text-gray-900 font-bold">{hitungUmur(p.tanggal_lahir)} Tahun</span></span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-                    <span className="truncate">Kelompok: <span className="text-gray-900 font-bold">{p.kelompok || '-'}</span></span>
+        {/* Grid Display */}
+        {!peserta || peserta.length === 0 ? (
+          <div className="p-20 border-2 border-dashed border-emerald-200 rounded-[3rem] text-center bg-white/30 backdrop-blur-sm">
+            <p className="text-emerald-800 font-bold italic">Belum ada data peserta.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {peserta.map((p: Peserta) => (
+              <Link key={p.id} href={`/peserta/${p.id}`} className="group relative backdrop-blur-md bg-white/60 border border-white/80 rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-200/50 hover:shadow-emerald-900/10 transition-all duration-500 active:scale-[0.97]">
+                <div className="relative h-60 overflow-hidden">
+                  {p.avatar_url ? (
+                    <img src={p.avatar_url} alt={p.nama} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  ) : (
+                    <div className="w-full h-full bg-linear-to-br from-emerald-50 to-teal-100 flex items-center justify-center text-6xl font-black text-emerald-200 select-none">
+                      {p.nama?.charAt(0)}
+                    </div>
+                  )}
+                  <div className={`absolute top-5 right-5 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg backdrop-blur-md text-white ${
+                    p.jenis_kelamin === 'Laki-laki' ? 'bg-blue-500/80' : 'bg-rose-500/80'
+                  }`}>
+                    {p.jenis_kelamin === 'Laki-laki' ? 'Ikhwan' : 'Akhwat'}
                   </div>
                 </div>
-              </div>
 
-              <div className="px-6 py-4 bg-gray-100/50 border-t border-gray-100 flex justify-between items-center group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
-                <span className="text-[10px] font-bold tracking-widest uppercase">Lihat Detail</span>
-                <span className="font-bold transition-transform group-hover:translate-x-1">→</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+                <div className="p-6">
+                  <h4 className="font-black text-xl text-slate-800 truncate capitalize mb-1">{p.nama || "Tanpa Nama"}</h4>
+                  <p className="text-[11px] text-emerald-600 font-bold mb-4 tracking-tighter italic opacity-70">
+                    {p.jenis_kelamin === 'Laki-laki' ? 'bin' : 'binti'} {p.bin_binti || "---"}
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white/50 p-3 rounded-2xl border border-white/50 shadow-xs">
+                      <span className="text-[9px] text-slate-400 block uppercase font-black tracking-tighter">Umur</span>
+                      <span className="text-sm font-black text-slate-700">{hitungUmur(p.tanggal_lahir)} th</span>
+                    </div>
+                    <div className="bg-white/50 p-3 rounded-2xl border border-white/50 shadow-xs">
+                      <span className="text-[9px] text-slate-400 block uppercase font-black tracking-tighter">Kelompok</span>
+                      <span className="text-sm font-black text-slate-700 truncate block">{p.kelompok || '-'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tombol Lihat Selengkapnya (Hover Effect) */}
+                <div className="px-6 py-4 bg-emerald-600 text-white flex justify-between items-center translate-y-full group-hover:translate-y-0 transition-transform duration-300 absolute bottom-0 left-0 right-0">
+                  <span className="text-[10px] font-black uppercase tracking-widest">Lihat Detail Lengkap</span>
+                  <span className="font-bold">→</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   )
 }
