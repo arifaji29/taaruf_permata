@@ -8,7 +8,7 @@ export default function Navbar({ userName, isAdmin, handleSignOut }: any) {
   const menuItems = [
     { name: 'Beranda', href: '/', icon: '🏠' },
     { name: 'Tentang Permata', href: '/tentang', icon: '💎' },
-    { name: 'Cari Jodoh', href: '/', icon: '❤️' },
+    { name: 'Cari Jodoh', href: '/peserta', icon: '❤️' },
     { name: 'Ruang Diskusi', href: '/diskusi', icon: '💬' },
     { name: 'Nasihat Pernikahan', href: '/nasihat', icon: '📖' },
   ]
@@ -82,7 +82,7 @@ export default function Navbar({ userName, isAdmin, handleSignOut }: any) {
 
           {/* Cari Jodoh Central */}
           <div className="absolute -top-6 left-1/2 -translate-x-1/2 flex flex-col items-center">
-            <Link href="/" className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center text-white text-xl shadow-xl border-4 border-white active:scale-90 transition-all">
+            <Link href="/peserta" className="w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center text-white text-xl shadow-xl border-4 border-white active:scale-90 transition-all">
               ❤️
             </Link>
             <span className="mt-1 text-[8px] font-black uppercase text-emerald-700">Cari Jodoh</span>
