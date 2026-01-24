@@ -23,7 +23,6 @@ export default function Login() {
       alert(error.message)
       setLoading(false)
     } else {
-      // Mengarahkan ke halaman utama setelah login berhasil
       router.push('/') 
       router.refresh()
     }
@@ -38,27 +37,29 @@ export default function Login() {
         </div>
         
         <h1 className="text-2xl font-black text-emerald-900 mb-2 uppercase tracking-tight">Selamat Datang</h1>
-        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-8">Masuk untuk mengelola biodata Anda</p>
+        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-8">Masuk untuk mengelola biodata Anda</p>
         
         <form onSubmit={handleLogin} className="space-y-4 text-left">
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Alamat Email</label>
+            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Alamat Email</label>
             <input 
               name="email" 
               type="email" 
               placeholder="Email Anda" 
-              className="w-full p-3 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50/50 font-medium transition-all" 
+              // Perubahan: text-slate-900 (teks lebih hitam), border-gray-200, dan focus:bg-white
+              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
               required 
             />
           </div>
           
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Kata Sandi</label>
+            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Kata Sandi</label>
             <input 
               name="password" 
               type="password" 
               placeholder="••••••••" 
-              className="w-full p-3 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50/50 font-medium transition-all" 
+              // Perubahan: text-slate-900 dan font-semibold agar titik password lebih tebal
+              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
               required 
             />
           </div>
@@ -71,8 +72,8 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-50">
-          <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+        <div className="mt-8 pt-6 border-t border-gray-100">
+          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
             Belum punya akun?{' '}
             <Link href="/register" className="text-emerald-600 hover:underline">
               Daftar Disini
