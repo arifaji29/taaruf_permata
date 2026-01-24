@@ -19,7 +19,7 @@ export default function Register() {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
     const nama = formData.get('nama') as string
-    const nomor_telepon = formData.get('nomor_telepon') as string // Ambil data nomor telepon
+    const nomor_telepon = formData.get('nomor_telepon') as string
 
     setUserEmail(email)
 
@@ -46,11 +46,11 @@ export default function Register() {
         .from('peserta')
         .insert([
           { 
-            id: authData.user.id, // Sinkronisasi ID dengan Auth
+            id: authData.user.id, 
             nama: nama,
             email: email,
-            nomor_telepon: nomor_telepon, // Simpan nomor telepon ke database
-            is_visible: false // Tetap sembunyi sampai biodata lengkap
+            nomor_telepon: nomor_telepon, 
+            is_visible: false 
           }
         ])
 
@@ -71,9 +71,9 @@ export default function Register() {
             📩
           </div>
           <h1 className="text-2xl font-black text-emerald-900 mb-4 uppercase tracking-tight">Cek Email Anda</h1>
-          <p className="text-gray-500 text-sm leading-relaxed mb-8">
+          <p className="text-gray-600 text-sm leading-relaxed mb-8">
             Link konfirmasi telah dikirim ke <br />
-            <strong className="text-emerald-700">{userEmail}</strong>.<br />
+            <strong className="text-emerald-700 font-bold">{userEmail}</strong>.<br />
             Silakan klik link tersebut untuk mengaktifkan akun Anda.
           </p>
           <button 
@@ -95,48 +95,48 @@ export default function Register() {
         </div>
 
         <h1 className="text-2xl font-black text-emerald-900 mb-2 uppercase tracking-tight">Daftar Akun</h1>
-        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-8">Buat akun untuk mulai taaruf</p>
+        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-8">Buat akun untuk mulai taaruf</p>
         
         <form onSubmit={handleRegister} className="space-y-4 text-left">
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Nama Lengkap</label>
+            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Nama Lengkap</label>
             <input 
               name="nama" 
-              placeholder="Sesuai KTP" 
-              className="w-full p-3 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50/50 font-medium transition-all" 
+              placeholder="Nama Lengkapmu" 
+              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
               required 
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Nomor WhatsApp</label>
+            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Nomor WhatsApp</label>
             <input 
               name="nomor_telepon" 
               type="tel"
               placeholder="0812..." 
-              className="w-full p-3 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50/50 font-medium transition-all" 
+              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
               required 
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Email</label>
+            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Email</label>
             <input 
               name="email" 
               type="email" 
-              placeholder="email@aktif.com" 
-              className="w-full p-3 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50/50 font-medium transition-all" 
+              placeholder="email aktif" 
+              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
               required 
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-400 uppercase ml-1">Password</label>
+            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Password</label>
             <input 
               name="password" 
               type="password" 
               placeholder="Min. 6 Karakter" 
-              className="w-full p-3 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50/50 font-medium transition-all" 
+              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
               required 
             />
           </div>
@@ -149,8 +149,8 @@ export default function Register() {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-50">
-          <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">
+        <div className="mt-8 pt-6 border-t border-gray-100">
+          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
             Sudah punya akun?{' '}
             <Link href="/login" className="text-emerald-600 hover:underline">
               Masuk Disini
