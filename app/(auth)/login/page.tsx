@@ -29,53 +29,61 @@ export default function Login() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-2xl border border-gray-100 text-center">
-        {/* Dekorasi Visual */}
-        <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl animate-pulse">
+    <main className="min-h-screen flex items-center justify-center bg-linear-to-br from-emerald-500 via-teal-600 to-cyan-700 p-6 relative overflow-hidden">
+      {/* Dekorasi Background Glow */}
+      <div className="absolute top-[-10%] left-[-10%] w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+
+      {/* Card Glassmorphism */}
+      <div className="w-full max-w-md backdrop-blur-xl bg-white/20 p-10 rounded-[2.5rem] shadow-2xl border border-white/30 text-center z-10">
+        {/* Ikon dengan efek Glass */}
+        <div className="w-20 h-20 bg-white/30 backdrop-blur-md text-white rounded-3xl flex items-center justify-center mx-auto mb-6 text-3xl border border-white/40 shadow-xl">
           🔐
         </div>
         
-        <h1 className="text-2xl font-black text-emerald-900 mb-2 uppercase tracking-tight">Selamat Datang</h1>
-        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-8">Masuk untuk mengelola biodata Anda</p>
+        <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter drop-shadow-md">
+          Selamat Datang
+        </h1>
+        <p className="text-emerald-100 text-[10px] font-bold uppercase tracking-[0.2em] mb-10 opacity-80">
+          Masuk untuk mengelola biodata Anda
+        </p>
         
-        <form onSubmit={handleLogin} className="space-y-4 text-left">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Alamat Email</label>
+        <form onSubmit={handleLogin} className="space-y-5 text-left">
+          <div className="space-y-2">
+            <label className="text-[11px] font-black text-white/80 uppercase ml-2 tracking-wider">Alamat Email</label>
             <input 
               name="email" 
               type="email" 
               placeholder="Email Anda" 
-              // Perubahan: text-slate-900 (teks lebih hitam), border-gray-200, dan focus:bg-white
-              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
+              className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl outline-none focus:ring-2 focus:ring-white/50 text-white font-medium placeholder:text-white/40 transition-all backdrop-blur-sm" 
               required 
             />
           </div>
           
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Kata Sandi</label>
+          <div className="space-y-2">
+            <label className="text-[11px] font-black text-white/80 uppercase ml-2 tracking-wider">Kata Sandi</label>
             <input 
               name="password" 
               type="password" 
               placeholder="••••••••" 
-              // Perubahan: text-slate-900 dan font-semibold agar titik password lebih tebal
-              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
+              className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl outline-none focus:ring-2 focus:ring-white/50 text-white font-medium placeholder:text-white/40 transition-all backdrop-blur-sm" 
               required 
             />
           </div>
           
           <button 
             disabled={loading}
-            className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition shadow-lg shadow-emerald-100 active:scale-95 disabled:bg-gray-300 mt-2"
+            className="w-full bg-white text-emerald-700 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-50 transition shadow-[0_10px_20px_rgba(0,0,0,0.1)] active:scale-95 disabled:bg-white/50 disabled:text-emerald-900/30 mt-4 overflow-hidden relative group"
           >
-            {loading ? 'Memproses...' : 'Masuk Sekarang'}
+            <span className="relative z-10">{loading ? 'Memproses...' : 'Masuk Sekarang'}</span>
+            <div className="absolute inset-0 bg-linear-to-r from-white via-emerald-50 to-white opacity-0 group-hover:opacity-100 transition-opacity"></div>
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-100">
-          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
+        <div className="mt-10 pt-6 border-t border-white/10">
+          <p className="text-xs text-white/70 font-bold uppercase tracking-widest">
             Belum punya akun?{' '}
-            <Link href="/register" className="text-emerald-600 hover:underline">
+            <Link href="/register" className="text-white hover:text-emerald-200 underline decoration-emerald-300/50 underline-offset-4">
               Daftar Disini
             </Link>
           </p>

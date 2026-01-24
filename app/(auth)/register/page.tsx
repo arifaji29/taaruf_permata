@@ -65,20 +65,20 @@ export default function Register() {
 
   if (isSubmitted) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-2xl border border-gray-100 text-center animate-in fade-in zoom-in duration-300">
-          <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl animate-bounce">
+      <main className="min-h-screen flex items-center justify-center bg-linear-to-br from-emerald-500 via-teal-600 to-cyan-700 p-6 relative overflow-hidden">
+        <div className="w-full max-w-md backdrop-blur-xl bg-white/20 p-10 rounded-[2.5rem] shadow-2xl border border-white/30 text-center animate-in fade-in zoom-in duration-300 z-10">
+          <div className="w-20 h-20 bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center mx-auto mb-6 text-4xl border border-white/40 animate-bounce">
             📩
           </div>
-          <h1 className="text-2xl font-black text-emerald-900 mb-4 uppercase tracking-tight">Cek Email Anda</h1>
-          <p className="text-gray-600 text-sm leading-relaxed mb-8">
+          <h1 className="text-2xl font-black text-white mb-4 uppercase tracking-tight drop-shadow-md">Cek Email Anda</h1>
+          <p className="text-emerald-50 text-sm leading-relaxed mb-8 opacity-90">
             Link konfirmasi telah dikirim ke <br />
-            <strong className="text-emerald-700 font-bold">{userEmail}</strong>.<br />
+            <strong className="text-white font-bold">{userEmail}</strong>.<br />
             Silakan klik link tersebut untuk mengaktifkan akun Anda.
           </p>
           <button 
             onClick={() => router.push('/login')}
-            className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition shadow-lg active:scale-95"
+            className="w-full bg-white text-emerald-700 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-50 transition shadow-lg active:scale-95"
           >
             Lanjut ke Login
           </button>
@@ -88,71 +88,50 @@ export default function Register() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-2xl border border-gray-100 text-center">
-        <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl">
+    <main className="min-h-screen flex items-center justify-center bg-linear-to-br from-emerald-500 via-teal-600 to-cyan-700 p-6 relative overflow-hidden">
+      {/* Dekorasi Background Glow */}
+      <div className="absolute top-[-10%] right-[-10%] w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+      <div className="absolute bottom-[-10%] left-[-10%] w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+
+      <div className="w-full max-w-md backdrop-blur-xl bg-white/20 p-10 rounded-[2.5rem] shadow-2xl border border-white/30 text-center z-10">
+        <div className="w-16 h-16 bg-white/30 backdrop-blur-md text-white rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl border border-white/40">
           📝
         </div>
 
-        <h1 className="text-2xl font-black text-emerald-900 mb-2 uppercase tracking-tight">Daftar Akun</h1>
-        <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-8">Buat akun untuk mulai taaruf</p>
+        <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter drop-shadow-md">Daftar Akun</h1>
+        <p className="text-emerald-100 text-[10px] font-bold uppercase tracking-[0.2em] mb-8 opacity-80">Buat akun untuk mulai taaruf</p>
         
         <form onSubmit={handleRegister} className="space-y-4 text-left">
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Nama Lengkap</label>
-            <input 
-              name="nama" 
-              placeholder="Nama Lengkapmu" 
-              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
-              required 
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Nomor WhatsApp</label>
-            <input 
-              name="nomor_telepon" 
-              type="tel"
-              placeholder="0812..." 
-              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
-              required 
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Email</label>
-            <input 
-              name="email" 
-              type="email" 
-              placeholder="email aktif" 
-              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
-              required 
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[10px] font-black text-gray-600 uppercase ml-1">Password</label>
-            <input 
-              name="password" 
-              type="password" 
-              placeholder="Min. 6 Karakter" 
-              className="w-full p-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-gray-50 text-slate-900 font-semibold placeholder:text-gray-400 transition-all focus:bg-white" 
-              required 
-            />
-          </div>
+          {[
+            { label: 'Nama Lengkap', name: 'nama', type: 'text', placeholder: 'Nama Lengkapmu' },
+            { label: 'Nomor WhatsApp', name: 'nomor_telepon', type: 'tel', placeholder: '0812...' },
+            { label: 'Email', name: 'email', type: 'email', placeholder: 'email aktif' },
+            { label: 'Password', name: 'password', type: 'password', placeholder: 'Min. 6 Karakter' }
+          ].map((field) => (
+            <div key={field.name} className="space-y-1.5">
+              <label className="text-[11px] font-black text-white/80 uppercase ml-2 tracking-wider">{field.label}</label>
+              <input 
+                name={field.name}
+                type={field.type}
+                placeholder={field.placeholder}
+                className="w-full p-3.5 bg-white/10 border border-white/20 rounded-2xl outline-none focus:ring-2 focus:ring-white/50 text-white font-medium placeholder:text-white/30 transition-all backdrop-blur-sm" 
+                required 
+              />
+            </div>
+          ))}
           
           <button 
             disabled={loading} 
-            className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition shadow-lg active:scale-95 disabled:bg-gray-300 mt-2"
+            className="w-full bg-white text-emerald-700 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-50 transition shadow-xl active:scale-95 disabled:bg-white/50 disabled:text-emerald-900/30 mt-4"
           >
             {loading ? 'Memproses...' : 'Daftar Sekarang'}
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-gray-100">
-          <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">
+        <div className="mt-8 pt-6 border-t border-white/10">
+          <p className="text-xs text-white/70 font-bold uppercase tracking-widest">
             Sudah punya akun?{' '}
-            <Link href="/login" className="text-emerald-600 hover:underline">
+            <Link href="/login" className="text-white hover:text-emerald-200 underline decoration-emerald-300/50 underline-offset-4">
               Masuk Disini
             </Link>
           </p>
