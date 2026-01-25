@@ -29,61 +29,65 @@ export default function Login() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-linear-to-br from-emerald-500 via-teal-600 to-cyan-700 p-6 relative overflow-hidden">
-      {/* Dekorasi Background Glow */}
-      <div className="absolute top-[-10%] left-[-10%] w-72 h-72 bg-emerald-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-80 h-80 bg-cyan-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+    <main className="min-h-screen flex items-center justify-center bg-linear-to-br from-emerald-600 via-teal-700 to-cyan-800 p-4 relative overflow-hidden text-slate-900">
+      {/* Dekorasi Background Glow - Disesuaikan agar lebih halus */}
+      <div className="absolute top-[-5%] right-[-5%] w-64 h-64 bg-emerald-400 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
+      <div className="absolute bottom-[-5%] left-[-5%] w-64 h-64 bg-cyan-400 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
 
-      {/* Card Glassmorphism */}
-      <div className="w-full max-w-md backdrop-blur-xl bg-white/20 p-10 rounded-[2.5rem] shadow-2xl border border-white/30 text-center z-10">
-        {/* Ikon dengan efek Glass */}
-        <div className="w-20 h-20 bg-white/30 backdrop-blur-md text-white rounded-3xl flex items-center justify-center mx-auto mb-6 text-3xl border border-white/40 shadow-xl">
-          🔐
-        </div>
+      {/* Card diperkecil ke max-w-85 (kompak) */}
+      <div className="w-full max-w-85 backdrop-blur-xl bg-white/15 p-6 rounded-4xl shadow-2xl border border-white/20 text-center z-10">
         
-        <h1 className="text-3xl font-black text-white mb-2 uppercase tracking-tighter drop-shadow-md">
+        {/* Logo Lingkaran - Full Frame */}
+        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden border border-white/30">
+          <img 
+            src="/logo-permata.png" 
+            alt="Logo Permata" 
+            className="w-full h-full object-cover" 
+          />
+        </div>
+
+        <h1 className="text-3l font-black text-white mb-1 uppercase tracking-tighter drop-shadow-md">
           Selamat Datang
         </h1>
-        <p className="text-emerald-100 text-[10px] font-bold uppercase tracking-[0.2em] mb-10 opacity-80">
-          Masuk untuk mengelola biodata Anda
+        <p className="text-emerald-100 text-[8px] font-bold uppercase tracking-[0.2em] mb-8 opacity-80">
+          Masuk ke Akun Permata Anda
         </p>
         
-        <form onSubmit={handleLogin} className="space-y-5 text-left">
-          <div className="space-y-2">
-            <label className="text-[11px] font-black text-white/80 uppercase ml-2 tracking-wider">Alamat Email</label>
+        <form onSubmit={handleLogin} className="space-y-3 text-left">
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-white/90 uppercase ml-1 tracking-wider">Alamat Email</label>
             <input 
               name="email" 
               type="email" 
               placeholder="Email Anda" 
-              className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl outline-none focus:ring-2 focus:ring-white/50 text-white font-medium placeholder:text-white/40 transition-all backdrop-blur-sm" 
+              className="w-full p-2.5 bg-white/10 border border-white/15 rounded-xl outline-none focus:ring-2 focus:ring-white/40 text-white text-xs font-medium placeholder:text-white/20 transition-all backdrop-blur-sm" 
               required 
             />
           </div>
           
-          <div className="space-y-2">
-            <label className="text-[11px] font-black text-white/80 uppercase ml-2 tracking-wider">Kata Sandi</label>
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-white/90 uppercase ml-1 tracking-wider">Kata Sandi</label>
             <input 
               name="password" 
               type="password" 
               placeholder="••••••••" 
-              className="w-full p-4 bg-white/10 border border-white/20 rounded-2xl outline-none focus:ring-2 focus:ring-white/50 text-white font-medium placeholder:text-white/40 transition-all backdrop-blur-sm" 
+              className="w-full p-2.5 bg-white/10 border border-white/15 rounded-xl outline-none focus:ring-2 focus:ring-white/40 text-white text-xs font-medium placeholder:text-white/20 transition-all backdrop-blur-sm" 
               required 
             />
           </div>
           
           <button 
             disabled={loading}
-            className="w-full bg-white text-emerald-700 py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-50 transition shadow-[0_10px_20px_rgba(0,0,0,0.1)] active:scale-95 disabled:bg-white/50 disabled:text-emerald-900/30 mt-4 overflow-hidden relative group"
+            className="w-full bg-white text-teal-700 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 transition shadow-md active:scale-95 disabled:opacity-50 mt-4"
           >
-            <span className="relative z-10">{loading ? 'Memproses...' : 'Masuk Sekarang'}</span>
-            <div className="absolute inset-0 bg-linear-to-r from-white via-emerald-50 to-white opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            {loading ? 'Memproses...' : 'Masuk Sekarang'}
           </button>
         </form>
 
-        <div className="mt-10 pt-6 border-t border-white/10">
-          <p className="text-xs text-white/70 font-bold uppercase tracking-widest">
+        <div className="mt-6 pt-4 border-t border-white/10">
+          <p className="text-[9px] text-white/70 font-bold uppercase tracking-widest">
             Belum punya akun?{' '}
-            <Link href="/register" className="text-white hover:text-emerald-200 underline decoration-emerald-300/50 underline-offset-4">
+            <Link href="/register" className="text-white hover:text-emerald-200 underline decoration-white/30 underline-offset-2">
               Daftar Disini
             </Link>
           </p>
