@@ -10,6 +10,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  // State untuk melacak akordeon peminat yang terbuka
+  const [openAccordionId, setOpenAccordionId] = useState<string | null>(null)
 
   const hitungUmur = (tanggalLahir: string) => {
     if (!tanggalLahir) return '??';
@@ -69,7 +71,6 @@ export default function AdminDashboard() {
   };
 
   return (
-    // Dipaksa Light Mode dengan bg-gray-50 dan text-slate-900
     <main className="min-h-screen bg-gray-50 p-4 md:p-6 text-slate-900">
       <div className="max-w-7xl mx-auto space-y-6">
         
@@ -102,7 +103,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* STATISTIK SECTION (Ukuran Diperkecil) */}
+        {/* STATISTIK SECTION */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white p-4 rounded-3xl border border-emerald-100 shadow-sm flex items-center justify-between">
             <div>
@@ -120,7 +121,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* SEARCH BAR (Ukuran Diperkecil) */}
+        {/* SEARCH BAR */}
         <div className="relative">
           <input 
             type="text"
@@ -132,28 +133,35 @@ export default function AdminDashboard() {
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">🔍</span>
         </div>
 
-        {/* GRID DISPLAY PESERTA (Card Lebih Ringkas) */}
+        {/* GRID DISPLAY PESERTA */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredPeserta.map((p) => (
             <div key={p.id} className="bg-white rounded-3xl shadow-md border border-gray-100 overflow-hidden flex flex-col relative transition-all hover:shadow-lg">
               
-              {/* FITUR PEMINAT (TOOLTIP KEMBALI) */}
+              {/* ACCORDION PEMINAT (Mobile Friendly) */}
               {p.peminat && p.peminat.length > 0 && (
-                <div className="absolute top-3 right-3 z-10 group">
-                  <span className="bg-rose-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-md cursor-help">
-                    ❤️ {p.peminat.length} Tertarik
-                  </span>
-                  {/* Tooltip Nama Peminat */}
-                  <div className="absolute top-full right-0 mt-1 w-40 bg-white border border-rose-100 rounded-xl shadow-xl p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                    <p className="text-[8px] font-black text-rose-500 uppercase mb-1 border-b pb-0.5">Daftar Peminat:</p>
-                    <div className="max-h-20 overflow-y-auto">
-                      {p.peminat.map((m: any) => (
-                        <div key={m.id} className="text-[9px] font-bold text-slate-700 py-0.5 flex items-center gap-1.5 leading-none">
-                          <span className="text-rose-300">•</span> {m.pengirim?.nama || 'Tanpa Nama'}
-                        </div>
-                      ))}
+                <div className="absolute top-3 right-3 z-10 w-28">
+                  <button 
+                    onClick={() => setOpenAccordionId(openAccordionId === p.id ? null : p.id)}
+                    className="w-full bg-rose-500 text-white text-[8px] font-black px-2 py-1 rounded-full shadow-md flex items-center justify-between gap-1 active:scale-95 transition-all"
+                  >
+                    <span>❤️ {p.peminat.length} Tertarik</span>
+                    <span className={`text-[10px] transition-transform duration-200 ${openAccordionId === p.id ? 'rotate-180' : ''}`}>▼</span>
+                  </button>
+
+                  {/* Konten Akordeon */}
+                  {openAccordionId === p.id && (
+                    <div className="absolute top-full right-0 mt-1 w-40 bg-white border border-rose-100 rounded-xl shadow-xl p-2 animate-in fade-in slide-in-from-top-1 z-50">
+                      <p className="text-[8px] font-black text-rose-500 uppercase mb-1 border-b pb-0.5">Daftar Peminat:</p>
+                      <div className="max-h-24 overflow-y-auto space-y-1">
+                        {p.peminat.map((m: any) => (
+                          <div key={m.id} className="text-[9px] font-bold text-slate-700 py-0.5 flex items-center gap-1.5 leading-none border-b border-gray-50 last:border-0">
+                            <span className="text-rose-300">•</span> {m.pengirim?.nama || 'Tanpa Nama'}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
@@ -165,7 +173,7 @@ export default function AdminDashboard() {
                     <div className="w-full h-full flex items-center justify-center text-emerald-200 text-xl font-black">{p.nama?.charAt(0)}</div>
                   )}
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 pr-24"> {/* Padding kanan agar tidak tertabrak akordeon */}
                   <h2 className="text-sm font-black text-slate-800 uppercase truncate leading-none mb-0.5">{p.nama}</h2>
                   <p className="text-[9px] font-bold text-emerald-600 uppercase italic truncate">
                     {p.jenis_kelamin === 'Laki-laki' ? 'bin' : 'binti'} {p.bin_binti || '-'}
@@ -188,7 +196,6 @@ export default function AdminDashboard() {
                     <select
                       value={item.id || ""}
                       onChange={(e) => handleAssignTim(p.id, e.target.value, item.target)}
-                      // text-slate-900 untuk fix darkmode
                       className="w-full text-[10px] font-bold p-2 rounded-xl border border-gray-200 bg-white text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none cursor-pointer"
                     >
                       <option value="" className="text-slate-900">-- Pilih Pendamping --</option>
@@ -212,7 +219,7 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* LOADING & NOT FOUND (Ukuran diperkecil) */}
+        {/* LOADING & NOT FOUND */}
         {!loading && filteredPeserta.length === 0 && (
           <div className="p-16 text-center bg-white rounded-3xl border-2 border-dashed border-gray-100">
              <div className="text-4xl mb-3">🏜️</div>
