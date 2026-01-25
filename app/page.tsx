@@ -42,72 +42,77 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 pb-32 relative overflow-x-hidden">
+    <main className="min-h-screen bg-slate-50 pb-32 relative overflow-x-hidden text-slate-900">
       <div className="absolute top-0 left-0 w-full h-96 bg-linear-to-b from-emerald-500/10 to-transparent -z-10"></div>
 
       <Navbar userName={userName} isAdmin={isAdmin} handleSignOut={handleSignOut} />
 
-      <div className="px-6 py-8 max-w-7xl mx-auto space-y-12">
+      <div className="px-6 py-4 max-w-7xl mx-auto space-y-6">
         
-        {/* HERO SLIDER SECTION */}
+        {/* SECTION SAPAAN DI BAWAH NAVBAR (SEBELAH KANAN) */}
+        {user && (
+          <div className="flex justify-end px-2 animate-in fade-in slide-in-from-right-2 duration-1000">
+            <div className="bg-white/40 backdrop-blur-sm px-3 py-1 rounded-full border border-emerald-100/50 shadow-xs flex items-center gap-1.5">
+              <span className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse"></span>
+              <p className="text-[9px] font-black text-emerald-800 tracking-tighter">
+                Assalamu'alaikum, <span className="text-slate-500 font-bold">{userName}</span>
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* HERO SLIDER SECTION - Kompak */}
         <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
            <HeroSlider />
         </section>
 
-        {/* SECTION BLOG / NASIHAT PERNIKAHAN */}
-        <section className="space-y-6">
+        {/* SECTION BLOG / INFORMASI TERBARU - Kompak */}
+        <section className="space-y-4">
           <div className="flex items-center justify-between px-2">
-            <h3 className="text-xl font-black text-slate-800 uppercase tracking-tighter">Nasihat Terbaru</h3>
-            {/* Navigasi ke daftar semua blog peserta */}
+            <h3 className="text-lg font-black text-slate-800 uppercase tracking-tighter">Informasi Terbaru</h3>
             <Link 
               href="/peserta/blog"
-              className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline decoration-2 underline-offset-4"
+              className="text-[9px] font-black text-emerald-600 uppercase tracking-widest hover:underline decoration-2 underline-offset-4"
             >
               Lihat Semua →
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {daftarBlog && daftarBlog.length > 0 ? (
               daftarBlog.map((item) => (
-                <div key={item.id} className="group bg-white p-5 rounded-4xl shadow-sm border border-emerald-50 hover:shadow-md transition-all flex flex-col">
+                <div key={item.id} className="group bg-white p-4 rounded-3xl shadow-sm border border-emerald-50 hover:shadow-md transition-all flex flex-col">
                   {item.gambar_url && (
-                    <div className="aspect-video mb-4 overflow-hidden rounded-3xl">
+                    <div className="aspect-video mb-3 overflow-hidden rounded-2xl">
                       <img src={item.gambar_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt={item.judul} />
                     </div>
                   )}
                   
-                  <div className="space-y-2 grow">
-                    <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">{item.penulis || 'Admin'}</p>
-                    <h4 className="text-base font-black text-slate-800 leading-tight group-hover:text-emerald-700 transition-colors">
+                  <div className="space-y-1 grow">
+                    <p className="text-[8px] font-bold text-emerald-600 uppercase tracking-wider">{item.penulis || 'Admin'}</p>
+                    <h4 className="text-sm font-black text-slate-800 leading-tight group-hover:text-emerald-700 transition-colors line-clamp-2">
                       {item.judul}
                     </h4>
-                    <p className="text-slate-500 text-[11px] line-clamp-3 font-medium leading-relaxed">
+                    <p className="text-slate-500 text-[10px] line-clamp-2 font-medium leading-relaxed italic">
                       {item.konten}
                     </p>
                   </div>
 
-                  {/* UPDATE: Menggunakan Link yang mengarah ke detail slug */}
                   <Link 
                     href={`/peserta/blog/${item.slug}`}
-                    className="mt-4 text-[9px] font-black uppercase text-slate-400 group-hover:text-emerald-600 flex items-center gap-1 transition-colors"
+                    className="mt-3 text-[8px] font-black uppercase text-slate-400 group-hover:text-emerald-600 flex items-center gap-1 transition-colors"
                   >
                     Baca Selengkapnya <span>→</span>
                   </Link>
                 </div>
               ))
             ) : (
-              <>
-                <div className="p-12 border-2 border-dashed border-emerald-100 rounded-4xl text-center bg-white/40 backdrop-blur-sm">
-                  <div className="text-3xl mb-3">✍️</div>
-                  <p className="text-slate-500 font-bold text-[11px] tracking-tight italic">
-                    Konten blog akan muncul di sini <br />
-                    setelah Admin mengisi data pada tabel 'blog'.
-                  </p>
-                </div>
-                <div className="hidden md:block p-12 border-2 border-dashed border-emerald-100 rounded-4xl opacity-50"></div>
-                <div className="hidden md:block p-12 border-2 border-dashed border-emerald-100 rounded-4xl opacity-30"></div>
-              </>
+              <div className="p-8 border-2 border-dashed border-emerald-100 rounded-3xl text-center bg-white/40 backdrop-blur-sm col-span-full">
+                <div className="text-2xl mb-2 text-slate-300">✍️</div>
+                <p className="text-slate-400 font-bold text-[10px] tracking-tight italic">
+                  Konten blog akan muncul di sini.
+                </p>
+              </div>
             )}
           </div>
         </section>

@@ -27,8 +27,8 @@ export default function Navbar({ userName, isAdmin, handleSignOut }: any) {
             />
           </div>
           <div className="flex flex-col justify-center">
-            <span className="text-xl font-black text-emerald-900 tracking-tighter leading-none">Permata</span>
-            <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-widest">Temukan Pasangan Meraih Surga</span>
+            <span className="text-2xl font-black text-emerald-900 tracking-widest leading-none">Permata</span>
+            <span className="text-[8px] font-bold text-emerald-600 uppercase tracking-widest">Menjemput Jodoh untuk Meraih Surga</span>
           </div>
         </div>
         

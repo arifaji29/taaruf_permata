@@ -21,11 +21,10 @@ export default function RegisterPeserta() {
       if (!user) return router.push('/login')
       setUserId(user.id)
 
-      // 1. PERBAIKAN: Ambil data berdasarkan 'id' (UUID Auth)
       const { data } = await supabase
         .from('peserta')
         .select('*')
-        .eq('id', user.id) // Sinkronisasi dengan ID pendaftaran
+        .eq('id', user.id)
         .maybeSingle()
 
       if (data) {
@@ -77,9 +76,8 @@ export default function RegisterPeserta() {
       finalAvatarUrl = publicUrl
     }
 
-    // 2. Mapping data: Pastikan menggunakan 'id' sebagai kunci utama
     const payload = {
-      id: userId, // Gunakan 'id', bukan 'user_id'
+      id: userId,
       avatar_url: finalAvatarUrl,
       nama: formData.get('nama') as string,
       bin_binti: formData.get('bin_binti') as string,
@@ -102,10 +100,9 @@ export default function RegisterPeserta() {
       daerah: formData.get('daerah') as string,
       alamat_lengkap: formData.get('alamat_lengkap') as string,
       kriteria_calon_pasangan: formData.get('kriteria_calon_pasangan') as string,
-      is_visible: true // 3. SET TRUE: Agar profil muncul di halaman utama setelah lengkap
+      is_visible: true 
     }
 
-    // 4. UPSERT Berdasarkan kolom 'id'
     const { error } = await supabase
       .from('peserta')
       .upsert(payload, { onConflict: 'id' }) 
@@ -121,171 +118,177 @@ export default function RegisterPeserta() {
   }
 
   if (loadingProfile) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600 mb-4"></div>
-       <p className="font-bold text-emerald-800 uppercase tracking-widest text-xs">Memuat Formulir...</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white text-slate-900">
+       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-600 mb-2"></div>
+       <p className="font-bold text-emerald-800 uppercase tracking-widest text-[10px]">Memuat Formulir...</p>
     </div>
   )
 
   return (
-    <div className="max-w-4xl mx-auto p-10 bg-white shadow-lg my-10 rounded-xl border border-gray-100">
-      <h1 className="text-2xl font-bold mb-6 text-emerald-800 border-b pb-4 text-center">
-        Formulir Lengkap Biodata Permata
-      </h1>
-      
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* --- UPLOAD FOTO SECTION --- */}
-        <div className="md:col-span-2 flex flex-col items-center bg-gray-50 p-6 rounded-2xl border-2 border-dashed border-emerald-100 mb-4">
-          <div className="relative w-32 h-40 bg-white rounded-xl shadow-inner border overflow-hidden mb-4 flex items-center justify-center text-gray-300">
-            {previewUrl ? (
-              <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
-            ) : (
-              <span className="text-[10px] text-center p-2 uppercase font-bold">Belum Ada Foto</span>
-            )}
+    /* Latar belakang putih paksa (Anti-Dark Mode) */
+    <div className="min-h-screen bg-white py-6">
+      <div className="max-w-2xl mx-auto p-6 md:p-8 bg-white shadow-lg rounded-3xl border border-gray-100 text-slate-900">
+        
+        {/* Tombol Lihat Profil */}
+        <div className="flex justify-end mb-4">
+          <button 
+            onClick={() => router.push('/peserta/akun')}
+            className="text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-slate-200"
+          >
+            👤 Lihat Profil Saya
+          </button>
+        </div>
+
+        <h1 className="text-xl font-black mb-6 text-emerald-800 border-b border-emerald-50 pb-3 text-center uppercase tracking-tight">
+          Biodata Taaruf Permata
+        </h1>
+        
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          {/* --- SECTION FOTO (KOMPAK) --- */}
+          <div className="md:col-span-2 flex flex-col items-center bg-emerald-50/30 p-4 rounded-2xl border-2 border-dashed border-emerald-100 mb-2">
+            <div className="relative w-28 h-36 bg-white rounded-xl shadow-inner border border-emerald-100 overflow-hidden mb-3 flex items-center justify-center text-gray-300">
+              {previewUrl ? (
+                <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
+              ) : (
+                <span className="text-[9px] text-center p-2 uppercase font-black opacity-40">Foto Profil</span>
+              )}
+            </div>
+            <label className="bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-black text-[10px] uppercase cursor-pointer hover:bg-emerald-700 transition shadow-sm active:scale-95">
+              {profile?.avatar_url ? 'Ganti Foto' : 'Pilih Foto'}
+              <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+            </label>
+            <p className="text-[8px] text-gray-400 mt-1.5 font-bold uppercase tracking-widest">JPG / PNG | Max 2MB</p>
           </div>
-          <label className="bg-emerald-50 text-emerald-700 px-6 py-2 rounded-lg font-bold text-sm cursor-pointer hover:bg-emerald-100 transition">
-            {profile?.avatar_url ? 'Ganti Foto Profil' : 'Pilih Foto Profil'}
-            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-          </label>
-          <p className="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-widest">JPG / PNG | Max 2MB</p>
-        </div>
 
-        {/* --- DATA IDENTITAS --- */}
-        <div className="md:col-span-2 text-emerald-700 font-bold border-l-4 border-emerald-600 pl-2">Informasi Identitas</div>
-        
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Nama Lengkap</label>
-          <input name="nama" defaultValue={profile?.nama} className="p-2 border rounded focus:ring-2 focus:ring-emerald-500 outline-none" required />
-        </div>
-        
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Bin / Binti</label>
-          <input name="bin_binti" defaultValue={profile?.bin_binti} className="p-2 border rounded focus:ring-2 focus:ring-emerald-500 outline-none" required />
-        </div>
+          {/* --- 1. INFORMASI PERSONAL --- */}
+          <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-2">Informasi Personal</div>
+          
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Nama Lengkap</label>
+            <input name="nama" defaultValue={profile?.nama} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white" required />
+          </div>
+          
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Bin / Binti</label>
+            <input name="bin_binti" defaultValue={profile?.bin_binti} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white" required />
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Jenis Kelamin</label>
-          <select name="jenis_kelamin" defaultValue={profile?.jenis_kelamin} className="p-2 border rounded focus:ring-2 focus:ring-emerald-500 outline-none" required>
-            <option value="">Pilih</option>
-            <option value="Laki-laki">Laki-laki</option>
-            <option value="Perempuan">Perempuan</option>
-          </select>
-        </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Jenis Kelamin</label>
+            <select name="jenis_kelamin" defaultValue={profile?.jenis_kelamin} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white" required>
+              <option value="">Pilih</option>
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Status Pernikahan</label>
-          <select name="status" defaultValue={profile?.status} className="p-2 border rounded focus:ring-2 focus:ring-emerald-500 outline-none" required>
-            <option value="">Pilih</option>
-            <option value="Lajang">Lajang</option>
-            <option value="Duda">Duda</option>
-            <option value="Janda">Janda</option>
-          </select>
-        </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Status Pernikahan</label>
+            <select name="status" defaultValue={profile?.status} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white" required>
+              <option value="">Pilih</option>
+              <option value="Lajang">Lajang</option>
+              <option value="Duda">Duda</option>
+              <option value="Janda">Janda</option>
+            </select>
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Tempat Lahir</label>
-          <input name="tempat_lahir" defaultValue={profile?.tempat_lahir} className="p-2 border rounded" required />
-        </div>
-        
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Tanggal Lahir</label>
-          <input name="tanggal_lahir" type="date" defaultValue={profile?.tanggal_lahir} className="p-2 border rounded" required />
-        </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Tempat Lahir</label>
+            <input name="tempat_lahir" defaultValue={profile?.tempat_lahir} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
+          
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Tanggal Lahir</label>
+            <input name="tanggal_lahir" type="date" defaultValue={profile?.tanggal_lahir} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
 
-        {/* --- PROFIL KELUARGA & FISIK --- */}
-        <div className="md:col-span-2 text-emerald-700 font-bold border-l-4 border-emerald-600 pl-2 mt-4">Profil Keluarga & Fisik</div>
+          <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Anak Ke</label>
+              <input name="anak_ke" type="number" defaultValue={profile?.anak_ke} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
 
-        <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold">Anak Ke</label>
-            <input name="anak_ke" type="number" defaultValue={profile?.anak_ke} className="p-2 border rounded" required />
-        </div>
+          <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Jumlah Bersaudara</label>
+              <input name="jumlah_saudara" type="number" defaultValue={profile?.jumlah_saudara} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
 
-        <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold">Jumlah Bersaudara</label>
-            <input name="jumlah_saudara" type="number" defaultValue={profile?.jumlah_saudara} className="p-2 border rounded" required />
-        </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Suku</label>
+            <input name="suku" defaultValue={profile?.suku} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Suku</label>
-          <input name="suku" defaultValue={profile?.suku} className="p-2 border rounded" required />
-        </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Tinggi / Berat</label>
+            <div className="grid grid-cols-2 gap-2">
+               <input name="tinggi_badan" type="number" placeholder="cm" defaultValue={profile?.tinggi_badan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+               <input name="berat_badan" type="number" placeholder="kg" defaultValue={profile?.berat_badan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            </div>
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Tinggi Badan (cm)</label>
-          <input name="tinggi_badan" type="number" defaultValue={profile?.tinggi_badan} className="p-2 border rounded" required />
-        </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Pendidikan Terakhir</label>
+            <input name="pendidikan_terakhir" defaultValue={profile?.pendidikan_terakhir} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Berat Badan (kg)</label>
-          <input name="berat_badan" type="number" defaultValue={profile?.berat_badan} className="p-2 border rounded" required />
-        </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Pekerjaan</label>
+            <input name="pekerjaan" defaultValue={profile?.pekerjaan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
 
-        {/* --- LATAR BELAKANG --- */}
-        <div className="md:col-span-2 text-emerald-700 font-bold border-l-4 border-emerald-600 pl-2 mt-4">Latar Belakang & Hobby</div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Nomor WA</label>
+            <input name="nomor_telepon" type="tel" defaultValue={profile?.nomor_telepon} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Pendidikan Terakhir</label>
-          <input name="pendidikan_terakhir" defaultValue={profile?.pendidikan_terakhir} className="p-2 border rounded" required />
-        </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Hobby</label>
+            <input name="hobby" defaultValue={profile?.hobby} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" />
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Pekerjaan</label>
-          <input name="pekerjaan" defaultValue={profile?.pekerjaan} className="p-2 border rounded" required />
-        </div>
+          <div className="md:col-span-2 flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Alamat Domisili</label>
+            <textarea name="alamat_lengkap" defaultValue={profile?.alamat_lengkap} rows={2} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Nomor Telepon/WA</label>
-          <input name="nomor_telepon" type="tel" defaultValue={profile?.nomor_telepon} className="p-2 border rounded" required />
-        </div>
+          {/* --- 2. INFORMASI SAMBUNG --- */}
+          <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-3">Informasi Sambung</div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Hobby</label>
-          <input name="hobby" defaultValue={profile?.hobby} className="p-2 border rounded" />
-        </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Dapukan</label>
+            <input name="dapukan" defaultValue={profile?.dapukan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
 
-        {/* --- KEWILAYAHAN --- */}
-        <div className="md:col-span-2 text-emerald-700 font-bold border-l-4 border-emerald-600 pl-2 mt-4">Informasi Kewilayahan</div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Kelompok</label>
+            <input name="kelompok" defaultValue={profile?.kelompok} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
+          
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Desa</label>
+            <input name="desa" defaultValue={profile?.desa} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
+          
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Daerah</label>
+            <input name="daerah" defaultValue={profile?.daerah} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+          </div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Dapukan</label>
-          <input name="dapukan" defaultValue={profile?.dapukan} className="p-2 border rounded" required />
-        </div>
+          {/* --- 3. KRITERIA CALON PASANGAN --- */}
+          <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-3">Kriteria Calon Pasangan</div>
 
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Kelompok</label>
-          <input name="kelompok" defaultValue={profile?.kelompok} className="p-2 border rounded" required />
-        </div>
-        
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Desa</label>
-          <input name="desa" defaultValue={profile?.desa} className="p-2 border rounded" required />
-        </div>
-        
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold">Daerah</label>
-          <input name="daerah" defaultValue={profile?.daerah} className="p-2 border rounded" required />
-        </div>
-
-        <div className="md:col-span-2 flex flex-col gap-1">
-          <label className="text-sm font-semibold">Alamat Lengkap (Domisili)</label>
-          <textarea name="alamat_lengkap" defaultValue={profile?.alamat_lengkap} rows={2} className="p-2 border rounded" required />
-        </div>
-
-        {/* --- KRITERIA --- */}
-        <div className="md:col-span-2 text-emerald-700 font-bold border-l-4 border-emerald-600 pl-2 mt-4">Kriteria Calon Pasangan</div>
-
-        <div className="md:col-span-2 flex flex-col gap-1">
-          <textarea name="kriteria_calon_pasangan" defaultValue={profile?.kriteria_calon_pasangan} rows={3} className="p-2 border rounded" />
-        </div>
-        
-        <button 
-          type="submit" 
-          disabled={loading}
-          className="md:col-span-2 bg-emerald-600 text-white py-4 rounded-lg font-black uppercase tracking-widest hover:bg-emerald-700 disabled:bg-gray-400 transition-all shadow-md active:scale-95 mt-6 mb-10"
-        >
-          {loading ? 'Menyimpan...' : 'Simpan Biodata Taaruf ✨'}
-        </button>
-      </form>
+          <div className="md:col-span-2 flex flex-col gap-1">
+            <textarea name="kriteria_calon_pasangan" defaultValue={profile?.kriteria_calon_pasangan} rows={2} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" placeholder="Sebutkan kriteria khusus..." />
+          </div>
+          
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="md:col-span-2 bg-emerald-600 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-emerald-700 disabled:bg-gray-400 transition-all shadow-md active:scale-95 mt-4 mb-6"
+          >
+            {loading ? 'Menyimpan...' : 'Simpan Perubahan ✨'}
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
