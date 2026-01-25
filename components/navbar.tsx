@@ -10,7 +10,7 @@ export default function Navbar({ userName, isAdmin, handleSignOut }: any) {
     { name: 'Tentang Permata', href: '/tentang', icon: '💎' },
     { name: 'Cari Jodoh', href: '/peserta', icon: '❤️' },
     { name: 'Ruang Diskusi', href: '/diskusi', icon: '💬' },
-    { name: 'Nasihat Pernikahan', href: '/nasihat', icon: '📖' },
+    { name: 'Nasihat Pernikahan', href: '/peserta/blog', icon: '📖' },
   ]
 
   return (
@@ -92,7 +92,7 @@ export default function Navbar({ userName, isAdmin, handleSignOut }: any) {
             <span className="text-xl">💬</span>
             <span className="text-[8px] font-black uppercase text-slate-400">Diskusi</span>
           </Link>
-          <Link href="/nasihat" className="flex flex-col items-center gap-1 flex-1">
+          <Link href="/peserta/blog" className="flex flex-col items-center gap-1 flex-1">
             <span className="text-xl">📖</span>
             <span className="text-[8px] font-black uppercase text-slate-400">Nasihat</span>
           </Link>
