@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react'
 const slides = [
   {
     id: 1,
-    title: "Temukan Pasangan Menuju SurgaNya",
-    desc: "Layanan Taaruf terpusat untuk membantu Anda menemukan pasangan hidup yang sesuai dengan syariat.",
+    title: "Menunaikan sunnah Nabi yang mulia",
+    desc: "Nikah adalah sunnahku (tuntunanku). Maka barang siapa yang tidak suka dengan sunnahku (itu) bukanlah dia dari golonganku. (HR. Ibnu Majah)",
     image: "https://plus.unsplash.com/premium_photo-1678834778658-9862d9987dd3?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&w=1200",
     color: "from-emerald-600/80"
   },
   {
     id: 2,
-    title: "Lebih Mudah dalam satu genggaman",
-    desc: "Data profil Anda hanya ditampilkan atas izin Anda dan dikelola oleh tim admin yang amanah.",
+    title: "Pernikahan: Jalan Ketenangan yang Allah Janjikan",
+    desc: "Dan di antara tanda-tanda kekuasaan-Nya ialah Dia menciptakan untukmu istri-istri dari jenismu sendiri, supaya kamu merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih sayang dan kepedulian. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda bagi kaum yang berpikir (Ar-Rum (30) ayat 21:)",
     image: "https://images.unsplash.com/photo-1707329195093-83048065f99a?q=80&w=385&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&w=1200",
     color: "from-teal-600/80"
   }

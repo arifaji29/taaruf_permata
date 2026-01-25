@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { createClient } from '../../utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Eye, EyeOff } from 'lucide-react' // Impor library ikon
 
 export default function Register() {
   const supabase = createClient()
@@ -10,6 +11,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false) 
   const [userEmail, setUserEmail] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -83,25 +85,22 @@ export default function Register() {
       
       <div className="w-full max-w-85 backdrop-blur-xl bg-white/15 p-6 rounded-4xl shadow-2xl border border-white/20 text-center z-10">
         
-        {/* Frame Logo Lingkaran - Diperbaiki agar full */}
         <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden border border-white/30">
           <img 
             src="/logo-permata.png" 
             alt="Logo Permata" 
-            // Ganti object-contain menjadi object-cover agar gambar memenuhi lingkaran
             className="w-full h-full object-cover" 
           />
         </div>
 
         <h1 className="text-3l font-black text-white mb-1 uppercase tracking-tighter drop-shadow-md">Daftar Akun Permata</h1>
-        <p className="text-emerald-100 text-[8px] font-bold uppercase tracking-[0.2em] mb-6 opacity-80">Lengkapi Data Diri Berikut</p>
+        <p className="text-emerald-100 text-[8px] font-bold uppercase tracking-[0.2em] mb-6 opacity-80">Lengkapi Data Diri Untuk Mendaftar</p>
         
         <form onSubmit={handleRegister} className="space-y-3 text-left">
           {[
             { label: 'Nama Lengkap', name: 'nama', type: 'text', placeholder: 'Nama Lengkapmu' },
             { label: 'Nomor WhatsApp', name: 'nomor_telepon', type: 'tel', placeholder: '0812...' },
             { label: 'Email', name: 'email', type: 'email', placeholder: 'email aktif' },
-            { label: 'Password', name: 'password', type: 'password', placeholder: 'Min. 6 Karakter' }
           ].map((field) => (
             <div key={field.name} className="space-y-1">
               <label className="text-[9px] font-black text-white/90 uppercase ml-1 tracking-wider">{field.label}</label>
@@ -114,6 +113,28 @@ export default function Register() {
               />
             </div>
           ))}
+
+          {/* Kolom Password dengan Ikon Lucide */}
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-white/90 uppercase ml-1 tracking-wider">Password</label>
+            <div className="relative group">
+              <input 
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Min. 6 Karakter"
+                className="w-full p-2.5 bg-white/10 border border-white/15 rounded-xl outline-none focus:ring-2 focus:ring-white/40 text-white text-xs font-medium placeholder:text-white/20 transition-all backdrop-blur-sm pr-10" 
+                required 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors p-1"
+              >
+                {/* Logika ikon menggunakan Lucide React */}
+                {showPassword ? <EyeOff size={14} strokeWidth={2.5} /> : <Eye size={14} strokeWidth={2.5} />}
+              </button>
+            </div>
+          </div>
           
           <button 
             disabled={loading} 
