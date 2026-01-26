@@ -2,6 +2,7 @@ import { createClient } from '@/app/utils/supabase/server'
 import Navbar from '@/components/navbar'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { ChevronLeft } from 'lucide-react' // Menggunakan ikon Lucide agar konsisten
 
 export default async function BlogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -28,43 +29,43 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
     .eq('slug', slug)
     .single()
 
-  // Jika blog tidak ditemukan, tampilkan halaman 404
   if (!blog) {
     notFound()
   }
 
   return (
-    <main className="min-h-screen bg-white pb-20">
+    /* Menggunakan text-slate-900 untuk anti-dark mode */
+    <main className="min-h-screen bg-slate-50 pb-20 text-slate-900">
       <Navbar userName={userName} isAdmin={isAdmin} />
 
-      {/* Konten Utama */}
-      <article className="max-w-4xl mx-auto px-6 pt-12">
+      {/* Konten Utama - Dipersempit dari max-w-4xl ke max-w-2xl agar kompak */}
+      <article className="max-w-2xl mx-auto px-5 pt-8">
         
-        {/* Navigasi Kembali */}
+        {/* Navigasi Kembali - Lebih kecil dan rapat */}
         <Link 
           href="/peserta/blog" 
-          className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-600 mb-8 hover:gap-3 transition-all"
+          className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-6 hover:text-emerald-700 transition-all"
         >
-          ← Kembali ke Daftar Nasihat
+          <ChevronLeft size={14} strokeWidth={3} /> Kembali ke Daftar Nasihat
         </Link>
 
         {/* Metadata Artikel */}
-        <div className="space-y-4 mb-8">
-          <p className="text-xs font-black text-emerald-600 uppercase tracking-[0.2em]">
+        <div className="space-y-2 mb-6">
+          <p className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.15em] opacity-70">
             {new Date(blog.created_at).toLocaleDateString('id-ID', { 
               day: 'numeric', 
               month: 'long', 
               year: 'numeric' 
             })} • Oleh {blog.penulis || 'Admin'}
           </p>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 leading-[1.1] tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 leading-tight tracking-tight uppercase">
             {blog.judul}
           </h1>
         </div>
 
-        {/* Gambar Utama */}
+        {/* Gambar Utama - Dikecilkan border radiusnya agar seimbang */}
         {blog.gambar_url && (
-          <div className="w-full aspect-video rounded-[2.5rem] overflow-hidden border border-slate-100 shadow-2xl shadow-emerald-100/50 mb-12">
+          <div className="w-full aspect-video rounded-3xl overflow-hidden border border-slate-100 shadow-xl shadow-slate-200/50 mb-8">
             <img 
               src={blog.gambar_url} 
               alt={blog.judul} 
@@ -73,26 +74,26 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
           </div>
         )}
 
-        {/* Isi Artikel */}
-        <div className="prose prose-slate prose-lg max-w-none">
-          <div className="text-slate-700 leading-relaxed font-medium whitespace-pre-wrap">
+        {/* Isi Artikel - Ukuran teks disesuaikan agar lebih padat */}
+        <div className="prose prose-slate max-w-none">
+          <div className="text-slate-700 leading-relaxed font-medium text-sm md:text-base whitespace-pre-wrap italic opacity-90">
             {blog.konten}
           </div>
         </div>
 
-        {/* Footer Artikel / Call to Action */}
-        <div className="mt-20 p-8 md:p-12 bg-emerald-50 rounded-[3rem] border border-emerald-100 text-center space-y-4">
-          <span className="text-3xl">🌿</span>
-          <h3 className="text-xl font-black text-emerald-900">Semoga bermanfaat untuk rumah tangga Anda</h3>
-          <p className="text-emerald-700 font-medium text-sm max-w-md mx-auto leading-relaxed">
-            Ambil yang baik dari nasihat ini dan terapkanlah dengan penuh kasih sayang bersama pasangan.
+        {/* Footer Artikel - Kompak (Dikecilkan ukurannya) */}
+        <div className="mt-12 p-6 md:p-8 bg-white rounded-3xl border border-emerald-50 text-center space-y-3 shadow-sm">
+          <span className="text-2xl">🌿</span>
+          <h3 className="text-lg font-black text-emerald-900 uppercase tracking-tight leading-none">Semoga Bermanfaat</h3>
+          <p className="text-slate-500 font-medium text-[11px] max-w-xs mx-auto leading-relaxed">
+            Ambil kebaikan dari nasihat ini untuk diaplikasikan dalam membangun keluarga sakinah.
           </p>
-          <div className="pt-4">
+          <div className="pt-2">
             <Link 
               href="/peserta/blog" 
-              className="inline-block bg-white text-emerald-700 px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-sm hover:bg-emerald-100 transition-colors"
+              className="inline-block bg-emerald-50 text-emerald-700 px-6 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-emerald-100 transition-colors"
             >
-              Baca Nasihat Lainnya
+              Cari Nasihat Lainnya
             </Link>
           </div>
         </div>

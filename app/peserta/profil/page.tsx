@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '../../utils/supabase/client'
 import { useRouter } from 'next/navigation'
+// Impor ikon Lucide
+import { User, Users, Heart, Camera, Save, ArrowRight } from 'lucide-react'
 
 export default function RegisterPeserta() {
   const supabase = createClient()
@@ -125,17 +127,15 @@ export default function RegisterPeserta() {
   )
 
   return (
-    /* Latar belakang putih paksa (Anti-Dark Mode) */
     <div className="min-h-screen bg-white py-6">
       <div className="max-w-2xl mx-auto p-6 md:p-8 bg-white shadow-lg rounded-3xl border border-gray-100 text-slate-900">
         
-        {/* Tombol Lihat Profil */}
         <div className="flex justify-end mb-4">
           <button 
             onClick={() => router.push('/peserta/akun')}
-            className="text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-slate-200"
+            className="text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-600 px-4 py-2 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all border border-slate-200 flex items-center gap-1.5"
           >
-            👤 Lihat Profil Saya
+            <User size={12} /> Lihat Profil Saya
           </button>
         </div>
 
@@ -144,24 +144,26 @@ export default function RegisterPeserta() {
         </h1>
         
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          {/* --- SECTION FOTO (KOMPAK) --- */}
+          {/* --- SECTION FOTO DENGAN IKON LUCIDE --- */}
           <div className="md:col-span-2 flex flex-col items-center bg-emerald-50/30 p-4 rounded-2xl border-2 border-dashed border-emerald-100 mb-2">
             <div className="relative w-28 h-36 bg-white rounded-xl shadow-inner border border-emerald-100 overflow-hidden mb-3 flex items-center justify-center text-gray-300">
               {previewUrl ? (
                 <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
               ) : (
-                <span className="text-[9px] text-center p-2 uppercase font-black opacity-40">Foto Profil</span>
+                <Camera size={32} className="opacity-20" />
               )}
             </div>
-            <label className="bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-black text-[10px] uppercase cursor-pointer hover:bg-emerald-700 transition shadow-sm active:scale-95">
-              {profile?.avatar_url ? 'Ganti Foto' : 'Pilih Foto'}
+            <label className="bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-black text-[10px] uppercase cursor-pointer hover:bg-emerald-700 transition shadow-sm active:scale-95 flex items-center gap-2">
+              <Camera size={12} /> {profile?.avatar_url ? 'Ganti Foto' : 'Pilih Foto'}
               <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
             </label>
             <p className="text-[8px] text-gray-400 mt-1.5 font-bold uppercase tracking-widest">JPG / PNG | Max 2MB</p>
           </div>
 
           {/* --- 1. INFORMASI PERSONAL --- */}
-          <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-2">Informasi Personal</div>
+          <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-2 flex items-center gap-2">
+            <User size={14} /> Informasi Personal
+          </div>
           
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Nama Lengkap</label>
@@ -251,7 +253,9 @@ export default function RegisterPeserta() {
           </div>
 
           {/* --- 2. INFORMASI SAMBUNG --- */}
-          <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-3">Informasi Sambung</div>
+          <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-3 flex items-center gap-2">
+            <Users size={14} /> Informasi Sambung
+          </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Dapukan</label>
@@ -274,7 +278,9 @@ export default function RegisterPeserta() {
           </div>
 
           {/* --- 3. KRITERIA CALON PASANGAN --- */}
-          <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-3">Kriteria Calon Pasangan</div>
+          <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-3 flex items-center gap-2">
+            <Heart size={14} /> Kriteria Calon Pasangan
+          </div>
 
           <div className="md:col-span-2 flex flex-col gap-1">
             <textarea name="kriteria_calon_pasangan" defaultValue={profile?.kriteria_calon_pasangan} rows={2} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" placeholder="Sebutkan kriteria khusus..." />
@@ -283,8 +289,9 @@ export default function RegisterPeserta() {
           <button 
             type="submit" 
             disabled={loading}
-            className="md:col-span-2 bg-emerald-600 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-emerald-700 disabled:bg-gray-400 transition-all shadow-md active:scale-95 mt-4 mb-6"
+            className="md:col-span-2 bg-emerald-600 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-emerald-700 disabled:bg-gray-400 transition-all shadow-md active:scale-95 mt-4 mb-6 flex items-center justify-center gap-2"
           >
+            {loading ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div> : <Save size={14} />}
             {loading ? 'Menyimpan...' : 'Simpan Perubahan ✨'}
           </button>
         </form>

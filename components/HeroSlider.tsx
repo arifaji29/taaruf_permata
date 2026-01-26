@@ -30,7 +30,7 @@ export default function HeroSlider() {
 
   return (
     /* Menggunakan aspet 4/3 agar lebih ramping di mobile daripada aspect-square */
-    <div className="relative w-full aspect-[4/3] md:aspect-auto md:h-125 overflow-hidden rounded-4xl md:rounded-[2.5rem] shadow-2xl border border-white/20">
+    <div className="relative w-full aspect-4/3 md:aspect-auto md:h-125 overflow-hidden rounded-4xl md:rounded-[2.5rem] shadow-2xl border border-white/20">
       {slides.map((slide, index) => (
         <div
           key={slide.id}
@@ -42,9 +42,9 @@ export default function HeroSlider() {
           
           <div className={`absolute inset-0 bg-linear-to-r ${slide.color} to-transparent flex items-center px-5 md:px-16`}>
             {/* Padding dikurangi dari p-5 ke p-4 agar lebih rapat */}
-            <div className="max-w-[85%] md:max-w-lg backdrop-blur-md bg-white/10 p-4 md:p-8 rounded-[2rem] border border-white/20">
+            <div className="max-w-[85%] md:max-w-lg backdrop-blur-md bg-white/10 p-4 md:p-8 rounded-4xl border border-white/20">
               {/* Ukuran teks diturunkan dari text-2xl ke text-xl */}
-              <h2 className="text-xl md:text-5xl font-black text-white leading-tight mb-1.5 md:mb-4 drop-shadow-lg uppercase tracking-tighter">
+              <h2 className="text-xl md:text-3xl font-black text-white leading-tight mb-1.5 md:mb-4 drop-shadow-lg uppercase tracking-tighter">
                 {slide.title}
               </h2>
               {/* Deskripsi diturunkan ke text-[10px] */}

@@ -2,6 +2,21 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '../../utils/supabase/client'
 import Link from 'next/link'
+// Impor ikon Lucide
+import { 
+  Users, 
+  Heart, 
+  Search, 
+  Home, 
+  FileText, 
+  UserCheck, 
+  ChevronDown, 
+  ExternalLink,
+  MessageCircle,
+  MoreVertical,
+  X,
+  LayoutDashboard
+} from 'lucide-react'
 
 export default function AdminDashboard() {
   const supabase = createClient()
@@ -10,7 +25,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  // State untuk melacak akordeon peminat yang terbuka
   const [openAccordionId, setOpenAccordionId] = useState<string | null>(null)
 
   const hitungUmur = (tanggalLahir: string) => {
@@ -71,7 +85,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 p-4 md:p-6 text-slate-900">
+    <main className="min-h-screen bg-gray-50 p-4 md:p-6 text-slate-900 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
         
         {/* HEADER SECTION */}
@@ -84,20 +98,27 @@ export default function AdminDashboard() {
           <div className="relative">
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2.5 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-all"
+              className="p-2.5 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-all flex items-center justify-center"
             >
-              <div className="space-y-1 w-5">
-                <div className={`h-0.5 w-full bg-current transition-all ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></div>
-                <div className={`h-0.5 w-full bg-current transition-all ${isMenuOpen ? 'opacity-0' : ''}`}></div>
-                <div className={`h-0.5 w-full bg-current transition-all ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></div>
-              </div>
+              {isMenuOpen ? <X size={20} /> : <MoreVertical size={20} />}
             </button>
 
+            {/* NAV MENU KONSISTEN */}
             {isMenuOpen && (
               <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 overflow-hidden animate-in fade-in zoom-in-95">
-                <Link href="/" className="flex items-center gap-3 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700">🏠 Beranda</Link>
-                <Link href="/admin/blog" className="flex items-center gap-3 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-700">✍️ Kelola Blog</Link>
-                <Link href="/admin/tim-perkawinan" className="flex items-center gap-3 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700">🤝 Tim Perkawinan</Link>
+                <Link href="/admin/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-emerald-700 bg-emerald-50/50">
+                  <LayoutDashboard size={14} /> Dashboard Admin
+                </Link>
+                <Link href="/admin/blog" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-700">
+                  <FileText size={14} className="text-orange-500" /> Kelola Blog
+                </Link>
+                <Link href="/admin/tim-perkawinan" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700">
+                  <UserCheck size={14} className="text-indigo-500" /> Tim Perkawinan
+                </Link>
+                <div className="border-t border-gray-50 my-1"></div>
+                <Link href="/" className="flex items-center gap-3 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-700">
+                  <Home size={14} className="text-emerald-500" /> Beranda Utama
+                </Link>
               </div>
             )}
           </div>
@@ -110,19 +131,23 @@ export default function AdminDashboard() {
               <p className="text-[9px] font-black text-emerald-600 uppercase mb-1">Total Peserta</p>
               <h3 className="text-xl font-black text-slate-800">{totalTerdaftar} <span className="text-[10px] font-medium text-slate-400">Orang</span></h3>
             </div>
-            <div className="text-2xl bg-emerald-50 p-2 rounded-xl">👥</div>
+            <div className="bg-emerald-50 p-2.5 rounded-xl text-emerald-600">
+              <Users size={20} strokeWidth={2.5} />
+            </div>
           </div>
           <div className="bg-white p-4 rounded-3xl border border-rose-100 shadow-sm flex items-center justify-between">
             <div>
               <p className="text-[9px] font-black text-rose-600 uppercase mb-1">Mendapat Hati</p>
               <h3 className="text-xl font-black text-slate-800">{totalTertarik} <span className="text-[10px] font-medium text-slate-400">Orang</span></h3>
             </div>
-            <div className="text-2xl bg-rose-50 p-2 rounded-xl">💖</div>
+            <div className="bg-rose-50 p-2.5 rounded-xl text-rose-600">
+              <Heart size={20} strokeWidth={2.5} fill="currentColor" />
+            </div>
           </div>
         </div>
 
         {/* SEARCH BAR */}
-        <div className="relative">
+        <div className="relative group">
           <input 
             type="text"
             placeholder="Cari nama atau kelompok..."
@@ -130,7 +155,9 @@ export default function AdminDashboard() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full p-3.5 pl-12 bg-white border border-gray-200 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-700 text-sm transition-all"
           />
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">🔍</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors">
+            <Search size={18} strokeWidth={2.5} />
+          </span>
         </div>
 
         {/* GRID DISPLAY PESERTA */}
@@ -138,25 +165,24 @@ export default function AdminDashboard() {
           {filteredPeserta.map((p) => (
             <div key={p.id} className="bg-white rounded-3xl shadow-md border border-gray-100 overflow-hidden flex flex-col relative transition-all hover:shadow-lg">
               
-              {/* ACCORDION PEMINAT (Mobile Friendly) */}
+              {/* ACCORDION PEMINAT */}
               {p.peminat && p.peminat.length > 0 && (
-                <div className="absolute top-3 right-3 z-10 w-28">
+                <div className="absolute top-3 right-3 z-10 w-32">
                   <button 
                     onClick={() => setOpenAccordionId(openAccordionId === p.id ? null : p.id)}
-                    className="w-full bg-rose-500 text-white text-[8px] font-black px-2 py-1 rounded-full shadow-md flex items-center justify-between gap-1 active:scale-95 transition-all"
+                    className="w-full bg-rose-500 text-white text-[8px] font-black px-2 py-1.5 rounded-full shadow-md flex items-center justify-between gap-1 active:scale-95 transition-all"
                   >
-                    <span>❤️ {p.peminat.length} Tertarik</span>
-                    <span className={`text-[10px] transition-transform duration-200 ${openAccordionId === p.id ? 'rotate-180' : ''}`}>▼</span>
+                    <span className="flex items-center gap-1"><Heart size={8} fill="white" /> {p.peminat.length} Tertarik</span>
+                    <ChevronDown size={10} className={`transition-transform duration-200 ${openAccordionId === p.id ? 'rotate-180' : ''}`} />
                   </button>
 
-                  {/* Konten Akordeon */}
                   {openAccordionId === p.id && (
-                    <div className="absolute top-full right-0 mt-1 w-40 bg-white border border-rose-100 rounded-xl shadow-xl p-2 animate-in fade-in slide-in-from-top-1 z-50">
+                    <div className="absolute top-full right-0 mt-1 w-44 bg-white border border-rose-100 rounded-xl shadow-xl p-2 animate-in fade-in slide-in-from-top-1 z-50">
                       <p className="text-[8px] font-black text-rose-500 uppercase mb-1 border-b pb-0.5">Daftar Peminat:</p>
                       <div className="max-h-24 overflow-y-auto space-y-1">
                         {p.peminat.map((m: any) => (
                           <div key={m.id} className="text-[9px] font-bold text-slate-700 py-0.5 flex items-center gap-1.5 leading-none border-b border-gray-50 last:border-0">
-                            <span className="text-rose-300">•</span> {m.pengirim?.nama || 'Tanpa Nama'}
+                            <span className="w-1 h-1 rounded-full bg-rose-300"></span> {m.pengirim?.nama || 'Tanpa Nama'}
                           </div>
                         ))}
                       </div>
@@ -166,17 +192,17 @@ export default function AdminDashboard() {
               )}
 
               <div className="p-4 border-b border-gray-50 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-emerald-50 shrink-0 border border-white shadow-sm">
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-emerald-50 shrink-0 border border-white shadow-sm flex items-center justify-center">
                   {p.avatar_url ? (
                     <img src={p.avatar_url} className="w-full h-full object-cover" alt={p.nama} />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-emerald-200 text-xl font-black">{p.nama?.charAt(0)}</div>
+                    <Users size={20} className="text-emerald-200" />
                   )}
                 </div>
-                <div className="min-w-0 pr-24"> {/* Padding kanan agar tidak tertabrak akordeon */}
+                <div className="min-w-0 pr-24">
                   <h2 className="text-sm font-black text-slate-800 uppercase truncate leading-none mb-0.5">{p.nama}</h2>
                   <p className="text-[9px] font-bold text-emerald-600 uppercase italic truncate">
-                    {p.jenis_kelamin === 'Laki-laki' ? 'bin' : 'binti'} {p.bin_binti || '-'}
+                    {p.jenis_kel2amin === 'Laki-laki' ? 'bin' : 'binti'} {p.bin_binti || '-'}
                   </p>
                   <p className="text-[8px] font-black text-slate-400 uppercase mt-0.5">
                     {hitungUmur(p.tanggal_lahir)} thn • {p.kelompok || 'Kelompok -'}
@@ -193,26 +219,29 @@ export default function AdminDashboard() {
                 ].map((item) => (
                   <div key={item.target} className="space-y-1">
                     <label className="text-[8px] font-black text-slate-500 uppercase ml-1">{item.label}</label>
-                    <select
-                      value={item.id || ""}
-                      onChange={(e) => handleAssignTim(p.id, e.target.value, item.target)}
-                      className="w-full text-[10px] font-bold p-2 rounded-xl border border-gray-200 bg-white text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="" className="text-slate-900">-- Pilih Pendamping --</option>
-                      {listTim.filter(t => t.dapukan === item.filter).map((tim) => (
-                        <option key={tim.id} value={tim.id} className="text-slate-900">{tim.nama}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={item.id || ""}
+                        onChange={(e) => handleAssignTim(p.id, e.target.value, item.target)}
+                        className="w-full text-[10px] font-bold p-2 pr-8 rounded-xl border border-gray-200 bg-white text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none cursor-pointer"
+                      >
+                        <option value="">-- Pilih Pendamping --</option>
+                        {listTim.filter(t => t.dapukan === item.filter).map((tim) => (
+                          <option key={tim.id} value={tim.id}>{tim.nama}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    </div>
                   </div>
                 ))}
               </div>
 
               <div className="p-3 bg-white border-t border-gray-50 flex gap-2">
-                <Link href={`/peserta/${p.id}`} className="flex-1 text-center bg-gray-100 text-slate-600 py-2.5 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-gray-200 transition-colors">
-                  Detail
+                <Link href={`/peserta/${p.id}`} className="flex-1 text-center bg-gray-100 text-slate-600 py-2.5 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-gray-200 transition-colors flex items-center justify-center gap-1.5">
+                  <ExternalLink size={10} /> Detail
                 </Link>
-                <a href={`https://wa.me/${p.nomor_telepon?.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-emerald-600 text-white py-2.5 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100">
-                  Hubungi
+                <a href={`https://wa.me/${p.nomor_telepon?.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-emerald-600 text-white py-2.5 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-md flex items-center justify-center gap-1.5">
+                  <MessageCircle size={10} fill="currentColor" /> Hubungi
                 </a>
               </div>
             </div>
@@ -222,7 +251,9 @@ export default function AdminDashboard() {
         {/* LOADING & NOT FOUND */}
         {!loading && filteredPeserta.length === 0 && (
           <div className="p-16 text-center bg-white rounded-3xl border-2 border-dashed border-gray-100">
-             <div className="text-4xl mb-3">🏜️</div>
+             <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+               <Search size={32} className="text-slate-300" />
+             </div>
              <p className="text-slate-400 font-black uppercase tracking-tighter text-sm">Tidak ditemukan</p>
           </div>
         )}

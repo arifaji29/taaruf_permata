@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Permata",
+  title: "Taaruf Permata",
   description: "Menjemput jodoh untuk meraih surga",
 };
 

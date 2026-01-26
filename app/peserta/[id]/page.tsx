@@ -3,6 +3,8 @@ import { useState, useEffect, use } from 'react'
 import { createClient } from '../../utils/supabase/client'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+// Impor ikon Lucide
+import { ChevronLeft, X, Heart, Check, MessageSquare } from 'lucide-react'
 
 export default function DetailPeserta({
   params,
@@ -30,7 +32,6 @@ export default function DetailPeserta({
       const { data: prof } = await supabase.from('peserta').select('id, jenis_kelamin').eq('id', authUser.id).single()
       setUserProfile(prof)
 
-      // Cek status minat
       const { data: statusMinat } = await supabase
         .from('admin_peserta')
         .select('id')
@@ -55,7 +56,6 @@ export default function DetailPeserta({
     loadData()
   }, [id])
 
-  // Fungsi Toggle Tertarik yang diperbaiki untuk Client Component
   const handleToggleTertarik = async () => {
     if (!user || isProcessing) return
     setIsProcessing(true)
@@ -101,11 +101,14 @@ export default function DetailPeserta({
 
   return (
     <main className="min-h-screen bg-gray-50 py-6 px-4 text-slate-900 font-sans">
+      {/* MODAL ZOOM FOTO DENGAN IKON LUCIDE */}
       {isZoomed && p.avatar_url && (
-        <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsZoomed(false)}>
+        <div className="fixed inset-0 z-100 bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setIsZoomed(false)}>
           <div className="relative max-w-2xl w-full aspect-square rounded-[2.5rem] overflow-hidden shadow-2xl border-2 border-white/20">
             <img src={p.avatar_url} className="w-full h-full object-cover" alt={p.nama} />
-            <button className="absolute top-6 right-6 bg-white/20 text-white w-10 h-10 rounded-full font-black text-lg">✕</button>
+            <button className="absolute top-6 right-6 bg-white/20 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md">
+              <X size={20} strokeWidth={3} />
+            </button>
           </div>
         </div>
       )}
@@ -113,7 +116,12 @@ export default function DetailPeserta({
       <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-lg overflow-hidden border border-gray-100">
         <div className="relative h-80 bg-emerald-800 flex flex-col items-center justify-center">
           {p.avatar_url && <img src={p.avatar_url} className="absolute inset-0 w-full h-full object-cover opacity-20 blur-[2px]" alt="" />}
-          <Link href="/peserta" className="absolute top-4 left-4 bg-black/20 hover:bg-black/40 text-white px-3 py-1.5 rounded-full backdrop-blur-md text-[10px] font-black uppercase tracking-widest z-10">← Kembali</Link>
+          
+          {/* Link Kembali dengan Ikon Lucide */}
+          <Link href="/peserta" className="absolute top-4 left-4 bg-black/20 hover:bg-black/40 text-white px-3 py-1.5 rounded-full backdrop-blur-md text-[10px] font-black uppercase tracking-widest z-10 flex items-center gap-1">
+            <ChevronLeft size={12} strokeWidth={3} /> Kembali
+          </Link>
+
           <div className="relative z-10 text-center text-white px-4">
             <div onClick={() => p.avatar_url && setIsZoomed(true)} className="w-40 h-40 bg-white/20 rounded-[2.5rem] mx-auto mb-4 border-2 border-white/30 overflow-hidden flex items-center justify-center text-5xl font-black shadow-2xl backdrop-blur-sm cursor-pointer hover:scale-105 transition-transform">
               {p.avatar_url ? <img src={p.avatar_url} className="w-full h-full object-cover" /> : p.nama?.charAt(0)}
@@ -124,6 +132,7 @@ export default function DetailPeserta({
         </div>
 
         <div className="p-6 md:p-8">
+          {/* Tombol Tertarik dengan Ikon Lucide */}
           {tampilkanTombol && (
             <div className="mb-8">
               <button 
@@ -132,7 +141,7 @@ export default function DetailPeserta({
                 className={`w-full py-3 rounded-xl text-xs font-black shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 ${
                 statusMinatId ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-500 hover:bg-rose-600 text-white'
               }`}>
-                <span>{statusMinatId ? '✅' : '❤️'}</span> 
+                {statusMinatId ? <Check size={14} strokeWidth={3} /> : <Heart size={14} fill="currentColor" />} 
                 {isProcessing ? 'Memproses...' : statusMinatId ? 'Minat Terkirim (Batalkan)' : 'Saya Tertarik (Rahasia)'}
               </button>
             </div>
@@ -182,9 +191,10 @@ export default function DetailPeserta({
                     <p className="font-bold text-gray-800 text-sm truncate">{tim.nama}</p>
                   </div>
                 </div>
+                {/* Ikon Lucide WhatsApp di dalam Tombol Hubungi */}
                 <a href={`https://wa.me/${tim.nomor_telepon?.replace(/\D/g, '')}?text=${encodeURIComponent(`Bismillah, mohon arahan mengenai profil ${p.nama}.`)}`} 
-                   target="_blank" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-black text-[9px] uppercase shadow-sm shrink-0 transition-colors">
-                  WhatsApp
+                   target="_blank" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-black text-[9px] uppercase shadow-sm shrink-0 transition-colors flex items-center gap-1.5">
+                  <MessageSquare size={12} fill="currentColor" /> WhatsApp
                 </a>
               </div>
             ))}

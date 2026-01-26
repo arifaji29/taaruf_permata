@@ -54,7 +54,7 @@ export default function AkunPeserta() {
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-4 min-w-0">
               {/* Avatar/Foto Profil Kecil */}
-              <div className="w-12 h-12 md:w-14 md:h-14 bg-white/20 rounded-2xl border border-white/30 overflow-hidden flex-shrink-0 flex items-center justify-center text-xl font-black shadow-inner backdrop-blur-sm">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-white/20 rounded-2xl border border-white/30 overflow-hidden shrink-0 flex items-center justify-center text-xl font-black shadow-inner backdrop-blur-sm">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt={displayName} className="w-full h-full object-cover" />
                 ) : (
