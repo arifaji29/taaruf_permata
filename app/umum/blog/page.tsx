@@ -80,7 +80,7 @@ export default async function PesertaBlogPage() {
                   </p>
                   
                   <Link 
-                    href={`/peserta/blog/${item.slug}`}
+                    href={`/umum/blog/${item.slug}`}
                     className="mt-4 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:gap-3 transition-all"
                   >
                     Baca Detail <ArrowRight size={10} strokeWidth={3} />

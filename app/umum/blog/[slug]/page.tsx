@@ -43,7 +43,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
         
         {/* Navigasi Kembali - Lebih kecil dan rapat */}
         <Link 
-          href="/peserta/blog" 
+          href="/umum/blog" 
           className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-6 hover:text-emerald-700 transition-all"
         >
           <ChevronLeft size={14} strokeWidth={3} /> Kembali ke Daftar Nasihat
@@ -90,7 +90,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
           </p>
           <div className="pt-2">
             <Link 
-              href="/peserta/blog" 
+              href="/umum/blog" 
               className="inline-block bg-emerald-50 text-emerald-700 px-6 py-2.5 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-emerald-100 transition-colors"
             >
               Cari Nasihat Lainnya

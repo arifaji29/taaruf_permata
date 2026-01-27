@@ -22,10 +22,10 @@ export default function Navbar({ userName, isAdmin }: any) { // Hapus handleSign
 
   const menuItems = [
     { name: 'Beranda', href: '/', icon: <Home size={18} /> },
-    { name: 'Tentang Permata', href: '/tentang', icon: <Gem size={18} /> },
+    { name: 'Tentang Permata', href: '/umum/tentang', icon: <Gem size={18} /> },
     { name: 'Cari Jodoh', href: '/peserta', icon: <Heart size={18} /> },
     { name: 'Ruang Diskusi', href: '/diskusi', icon: <MessageCircle size={18} /> },
-    { name: 'Nasihat Pernikahan', href: '/peserta/blog', icon: <BookOpen size={18} /> },
+    { name: 'Nasihat Pernikahan', href: '/umum/blog', icon: <BookOpen size={18} /> },
   ]
 
   // Perbaikan Logika Logout: Mandiri & Langsung Refresh
@@ -113,7 +113,7 @@ export default function Navbar({ userName, isAdmin }: any) { // Hapus handleSign
             <Home size={20} className="text-slate-600" />
             <span className="text-[8px] font-black uppercase text-slate-400">Beranda</span>
           </Link>
-          <Link href="/tentang" className="flex flex-col items-center gap-1 flex-1 mr-6">
+          <Link href="/umum/tentang" className="flex flex-col items-center gap-1 flex-1 mr-6">
             <Gem size={20} className="text-slate-600" />
             <span className="text-[8px] font-black uppercase text-slate-400">Tentang</span>
           </Link>
@@ -129,7 +129,7 @@ export default function Navbar({ userName, isAdmin }: any) { // Hapus handleSign
             <MessageCircle size={20} className="text-slate-600" />
             <span className="text-[8px] font-black uppercase text-slate-400">Diskusi</span>
           </Link>
-          <Link href="/peserta/blog" className="flex flex-col items-center gap-1 flex-1">
+          <Link href="/umum/blog" className="flex flex-col items-center gap-1 flex-1">
             <BookOpen size={20} className="text-slate-600" />
             <span className="text-[8px] font-black uppercase text-slate-400">Nasihat</span>
           </Link>

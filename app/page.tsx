@@ -71,7 +71,7 @@ export default async function HomePage() {
           <div className="flex items-center justify-between px-2">
             <h3 className="text-lg font-black text-slate-800 uppercase tracking-tighter">Informasi Terbaru</h3>
             <Link 
-              href="/peserta/blog"
+              href="/umum/blog"
               className="text-[9px] font-black text-emerald-600 uppercase tracking-widest hover:underline decoration-2 underline-offset-4"
             >
               Lihat Semua →
@@ -99,7 +99,7 @@ export default async function HomePage() {
                   </div>
 
                   <Link 
-                    href={`/peserta/blog/${item.slug}`}
+                    href={`/umum/blog/${item.slug}`}
                     className="mt-3 text-[8px] font-black uppercase text-slate-400 group-hover:text-emerald-600 flex items-center gap-1 transition-colors"
                   >
                     Baca Selengkapnya <span>→</span>
