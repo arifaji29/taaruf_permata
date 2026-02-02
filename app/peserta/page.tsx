@@ -1,6 +1,7 @@
 import { createClient } from '../utils/supabase/server'
 import Link from 'next/link'
 import Navbar from '@/components/navbar'
+import { Search } from 'lucide-react' // Impor ikon search
 
 interface Peserta {
   id: string;
@@ -16,10 +17,10 @@ interface Peserta {
 export default async function PesertaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ gender?: string }>;
+  searchParams: Promise<{ gender?: string; q?: string }>; // Tambahkan q (query) ke params
 }) {
   const supabase = await createClient()
-  const { gender } = await searchParams
+  const { gender, q } = await searchParams // Ambil nilai pencarian dari URL
   const { data: { user } } = await supabase.auth.getUser()
 
   let userProfile = null;
@@ -60,6 +61,11 @@ export default async function PesertaPage({
     query = query.eq('jenis_kelamin', gender)
   }
 
+  // --- LOGIKA PENCARIAN (BARU) ---
+  if (q) {
+    query = query.ilike('nama', `%${q}%`) // Mencari nama yang mirip dengan input
+  }
+
   const { data: peserta, error } = await query.order('created_at', { ascending: false });
 
   const hitungUmur = (tanggalLahir: string) => {
@@ -82,9 +88,26 @@ export default async function PesertaPage({
 
       <div className="px-4 py-6 max-w-6xl mx-auto">
         <header className="mb-6">
-          <h1 className="text-2xl font-black text-slate-800 tracking-tighter uppercase">Temukan Jodohmu Di sini</h1>
-          <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest opacity-70">Database Peserta Permata</p>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tighter uppercase leading-none">Temukan Jodohmu Di sini</h1>
+          <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest opacity-70 mt-1">Database Peserta Permata</p>
         </header>
+
+        {/* SEARCH BAR SECTION (BARU) */}
+        <div className="mb-6">
+          <form action="/peserta" method="GET" className="relative group">
+            {/* Mempertahankan filter gender saat mencari */}
+            {gender && <input type="hidden" name="gender" value={gender} />}
+            
+            <input 
+              name="q"
+              type="text"
+              placeholder="Cari nama peserta..."
+              defaultValue={q || ''}
+              className="w-full p-3 pl-11 bg-white border border-slate-200 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-700 text-xs transition-all"
+            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={18} strokeWidth={2.5} />
+          </form>
+        </div>
 
         {/* Kondisi: Hanya tampilkan Tombol Filter jika user adalah ADMIN */}
         {isAdmin && (
@@ -97,16 +120,18 @@ export default async function PesertaPage({
 
         {!peserta || peserta.length === 0 ? (
           <div className="p-16 border-2 border-dashed border-emerald-200 rounded-3xl text-center bg-white/30 backdrop-blur-sm">
-            <p className="text-emerald-800 text-sm font-bold italic">Belum ada peserta yang tersedia untuk saat ini.</p>
+            <p className="text-emerald-800 text-sm font-bold italic">
+              {q ? `Peserta dengan nama "${q}" tidak ditemukan.` : 'Belum ada peserta yang tersedia untuk saat ini.'}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {peserta.map((p: Peserta) => (
-              <div key={p.id} className="bg-white rounded-4xl overflow-hidden shadow-lg shadow-slate-200/50 border border-slate-100 flex flex-col transition-transform active:scale-[0.98]">
+              <div key={p.id} className="group bg-white rounded-4xl overflow-hidden shadow-lg shadow-slate-200/50 border border-slate-100 flex flex-col transition-all hover:shadow-xl active:scale-[0.98]">
                 
                 <div className="relative h-48 overflow-hidden">
                   {p.avatar_url ? (
-                    <img src={p.avatar_url} alt={p.nama} className="w-full h-full object-cover" />
+                    <img src={p.avatar_url} alt={p.nama} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <div className="w-full h-full bg-linear-to-br from-emerald-50 to-teal-100 flex items-center justify-center text-5xl font-black text-emerald-200">
                       {p.nama?.charAt(0)}
@@ -127,11 +152,11 @@ export default async function PesertaPage({
                   
                   <div className="grid grid-cols-2 gap-2 mb-4">
                     <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
-                      <span className="text-[8px] text-slate-400 block uppercase font-black tracking-tighter">Umur</span>
+                      <span className="text-[8px] text-slate-400 block uppercase font-black tracking-tighter leading-none mb-1">Umur</span>
                       <span className="text-xs font-black text-slate-700">{hitungUmur(p.tanggal_lahir)} Tahun</span>
                     </div>
                     <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
-                      <span className="text-[8px] text-slate-400 block uppercase font-black tracking-tighter">Kelompok</span>
+                      <span className="text-[8px] text-slate-400 block uppercase font-black tracking-tighter leading-none mb-1">Kelompok</span>
                       <span className="text-xs font-black text-slate-700 truncate block">{p.kelompok || '-'}</span>
                     </div>
                   </div>

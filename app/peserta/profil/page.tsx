@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '../../utils/supabase/client'
 import { useRouter } from 'next/navigation'
 // Impor ikon Lucide
-import { User, Users, Heart, Camera, Save, ArrowRight } from 'lucide-react'
+import { User, Users, Heart, Camera, Save, ShieldCheck, Phone, MapPin } from 'lucide-react'
 
 export default function RegisterPeserta() {
   const supabase = createClient()
@@ -23,9 +23,10 @@ export default function RegisterPeserta() {
       if (!user) return router.push('/login')
       setUserId(user.id)
 
+      // Ambil profil beserta data tim kelompok jika sudah ada
       const { data } = await supabase
         .from('peserta')
-        .select('*')
+        .select(`*, tim_kelompok:tim_kelompok_id(*)`)
         .eq('id', user.id)
         .maybeSingle()
 
@@ -57,13 +58,13 @@ export default function RegisterPeserta() {
     let finalAvatarUrl = profile?.avatar_url || null
 
     if (imageFile && userId) {
-      const fileExt = imageFile.name.split('.').pop()
+      const fileExt = (imageFile as File).name.split('.').pop()
       const fileName = `${userId}-${Math.random()}.${fileExt}`
       const filePath = `user_photos/${fileName}`
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, imageFile, { upsert: true })
+        .upload(filePath, imageFile as File, { upsert: true })
 
       if (uploadError) {
         alert('Gagal upload foto: ' + uploadError.message)
@@ -76,6 +77,32 @@ export default function RegisterPeserta() {
         .getPublicUrl(filePath)
         
       finalAvatarUrl = publicUrl
+    }
+
+    // LOGIKA PENDAFTARAN/PEMBARUAN TIM KELOMPOK KE TABEL tim_perkawinan
+    let currentTimKelompokId = profile?.tim_kelompok_id || null
+    const namaTimInput = formData.get('nama_tim_kelompok') as string
+    const waTimInput = formData.get('wa_tim_kelompok') as string
+    const alamatTimInput = formData.get('alamat_tim_kelompok') as string
+
+    if (namaTimInput) {
+      // Menjalankan upsert petugas ke tabel tim_perkawinan
+      const { data: newTim, error: timError } = await supabase
+        .from('tim_perkawinan')
+        .upsert({ 
+          nama: namaTimInput, 
+          nomor_telepon: waTimInput, 
+          alamat_lengkap: alamatTimInput, // Alamat petugas tersinkronisasi
+          dapukan: 'Tim Perkawinan Kelompok' 
+        }, { onConflict: 'nama' }) 
+        .select()
+        .single()
+
+      if (!timError && newTim) {
+        currentTimKelompokId = newTim.id
+      } else if (timError) {
+        console.error("Gagal sinkronisasi petugas:", timError.message)
+      }
     }
 
     const payload = {
@@ -100,6 +127,7 @@ export default function RegisterPeserta() {
       kelompok: formData.get('kelompok') as string,
       desa: formData.get('desa') as string,
       daerah: formData.get('daerah') as string,
+      tim_kelompok_id: currentTimKelompokId, // Relasi ke tabel tim_perkawinan diperbarui
       alamat_lengkap: formData.get('alamat_lengkap') as string,
       kriteria_calon_pasangan: formData.get('kriteria_calon_pasangan') as string,
       is_visible: true 
@@ -112,7 +140,7 @@ export default function RegisterPeserta() {
     if (error) {
       alert('Gagal menyimpan: ' + error.message)
     } else {
-      alert('Biodata Taaruf berhasil diperbarui!')
+      alert('Biodata Taaruf Berhasil Diperbarui!')
       router.replace('/peserta/akun') 
     }
 
@@ -144,7 +172,7 @@ export default function RegisterPeserta() {
         </h1>
         
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-          {/* --- SECTION FOTO DENGAN IKON LUCIDE --- */}
+          {/* --- SECTION FOTO --- */}
           <div className="md:col-span-2 flex flex-col items-center bg-emerald-50/30 p-4 rounded-2xl border-2 border-dashed border-emerald-100 mb-2">
             <div className="relative w-28 h-36 bg-white rounded-xl shadow-inner border border-emerald-100 overflow-hidden mb-3 flex items-center justify-center text-gray-300">
               {previewUrl ? (
@@ -167,17 +195,17 @@ export default function RegisterPeserta() {
           
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Nama Lengkap</label>
-            <input name="nama" defaultValue={profile?.nama} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white" required />
+            <input name="nama" defaultValue={profile?.nama} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-medium" required />
           </div>
           
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Bin / Binti</label>
-            <input name="bin_binti" defaultValue={profile?.bin_binti} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white" required />
+            <input name="bin_binti" defaultValue={profile?.bin_binti} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-medium" required />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Jenis Kelamin</label>
-            <select name="jenis_kelamin" defaultValue={profile?.jenis_kelamin} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white" required>
+            <select name="jenis_kelamin" defaultValue={profile?.jenis_kelamin} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-medium" required>
               <option value="">Pilih</option>
               <option value="Laki-laki">Laki-laki</option>
               <option value="Perempuan">Perempuan</option>
@@ -186,7 +214,7 @@ export default function RegisterPeserta() {
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Status Pernikahan</label>
-            <select name="status" defaultValue={profile?.status} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white" required>
+            <select name="status" defaultValue={profile?.status} className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-medium" required>
               <option value="">Pilih</option>
               <option value="Lajang">Lajang</option>
               <option value="Duda">Duda</option>
@@ -196,60 +224,60 @@ export default function RegisterPeserta() {
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Tempat Lahir</label>
-            <input name="tempat_lahir" defaultValue={profile?.tempat_lahir} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <input name="tempat_lahir" defaultValue={profile?.tempat_lahir} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
           
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Tanggal Lahir</label>
-            <input name="tanggal_lahir" type="date" defaultValue={profile?.tanggal_lahir} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <input name="tanggal_lahir" type="date" defaultValue={profile?.tanggal_lahir} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
 
           <div className="flex flex-col gap-1">
               <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Anak Ke</label>
-              <input name="anak_ke" type="number" defaultValue={profile?.anak_ke} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+              <input name="anak_ke" type="number" defaultValue={profile?.anak_ke} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
 
           <div className="flex flex-col gap-1">
               <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Jumlah Bersaudara</label>
-              <input name="jumlah_saudara" type="number" defaultValue={profile?.jumlah_saudara} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+              <input name="jumlah_saudara" type="number" defaultValue={profile?.jumlah_saudara} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Suku</label>
-            <input name="suku" defaultValue={profile?.suku} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <input name="suku" defaultValue={profile?.suku} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Tinggi / Berat</label>
             <div className="grid grid-cols-2 gap-2">
-               <input name="tinggi_badan" type="number" placeholder="cm" defaultValue={profile?.tinggi_badan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
-               <input name="berat_badan" type="number" placeholder="kg" defaultValue={profile?.berat_badan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+               <input name="tinggi_badan" type="number" placeholder="cm" defaultValue={profile?.tinggi_badan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
+               <input name="berat_badan" type="number" placeholder="kg" defaultValue={profile?.berat_badan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
             </div>
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Pendidikan Terakhir</label>
-            <input name="pendidikan_terakhir" defaultValue={profile?.pendidikan_terakhir} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <input name="pendidikan_terakhir" defaultValue={profile?.pendidikan_terakhir} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Pekerjaan</label>
-            <input name="pekerjaan" defaultValue={profile?.pekerjaan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <input name="pekerjaan" defaultValue={profile?.pekerjaan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Nomor WA</label>
-            <input name="nomor_telepon" type="tel" defaultValue={profile?.nomor_telepon} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <input name="nomor_telepon" type="tel" defaultValue={profile?.nomor_telepon} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Hobby</label>
-            <input name="hobby" defaultValue={profile?.hobby} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" />
+            <input name="hobby" defaultValue={profile?.hobby} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" />
           </div>
 
           <div className="md:col-span-2 flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Alamat Domisili</label>
-            <textarea name="alamat_lengkap" defaultValue={profile?.alamat_lengkap} rows={2} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <textarea name="alamat_lengkap" defaultValue={profile?.alamat_lengkap} rows={2} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
 
           {/* --- 2. INFORMASI SAMBUNG --- */}
@@ -259,22 +287,22 @@ export default function RegisterPeserta() {
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Dapukan</label>
-            <input name="dapukan" defaultValue={profile?.dapukan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <input name="dapukan" defaultValue={profile?.dapukan} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
 
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Kelompok</label>
-            <input name="kelompok" defaultValue={profile?.kelompok} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <input name="kelompok" defaultValue={profile?.kelompok} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
           
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Desa</label>
-            <input name="desa" defaultValue={profile?.desa} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <input name="desa" defaultValue={profile?.desa} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
           
           <div className="flex flex-col gap-1">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Daerah</label>
-            <input name="daerah" defaultValue={profile?.daerah} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" required />
+            <input name="daerah" defaultValue={profile?.daerah} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" required />
           </div>
 
           {/* --- 3. KRITERIA CALON PASANGAN --- */}
@@ -283,7 +311,45 @@ export default function RegisterPeserta() {
           </div>
 
           <div className="md:col-span-2 flex flex-col gap-1">
-            <textarea name="kriteria_calon_pasangan" defaultValue={profile?.kriteria_calon_pasangan} rows={2} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white" placeholder="Sebutkan kriteria khusus..." />
+            <textarea name="kriteria_calon_pasangan" defaultValue={profile?.kriteria_calon_pasangan} rows={2} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" placeholder="Sebutkan kriteria khusus..." />
+          </div>
+
+          {/* --- 4. BAGIAN TIM PERKAWINAN KELOMPOK (DIPERBAIKI) --- */}
+          <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-3 flex items-center gap-2">
+            <ShieldCheck size={14} /> Tim Perkawinan Kelompok
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1 flex items-center gap-1"><User size={10}/> Nama Petugas</label>
+            <input 
+              name="nama_tim_kelompok" 
+              placeholder="Nama Lengkap Petugas"
+              defaultValue={profile?.tim_kelompok?.nama}
+              className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-bold" 
+              required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1 flex items-center gap-1"><Phone size={10}/> WhatsApp Petugas</label>
+            <input 
+              name="wa_tim_kelompok" 
+              placeholder="628..."
+              defaultValue={profile?.tim_kelompok?.nomor_telepon}
+              className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-bold" 
+              required
+            />
+          </div>
+
+          <div className="md:col-span-2 flex flex-col gap-1">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1 flex items-center gap-1"><MapPin size={10}/> Alamat Petugas</label>
+            <input 
+              name="alamat_tim_kelompok" 
+              placeholder="Alamat Lengkap Petugas Kelompok"
+              defaultValue={profile?.tim_kelompok?.alamat_lengkap}
+              className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-medium" 
+              required
+            />
           </div>
           
           <button 
