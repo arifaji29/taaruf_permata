@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '../../utils/supabase/client'
 import { useRouter } from 'next/navigation'
-// Impor ikon Lucide
-import { User, Users, Heart, Camera, Save, ShieldCheck, Phone, MapPin } from 'lucide-react'
+// Impor ikon Lucide (Loader2 ditambahkan untuk indikator loading pencarian)
+import { User, Users, Heart, Camera, Save, ShieldCheck, Phone, MapPin, Loader2, Check } from 'lucide-react'
 
 export default function RegisterPeserta() {
   const supabase = createClient()
@@ -16,6 +16,12 @@ export default function RegisterPeserta() {
   
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  // --- STATE BARU: SKEMA AUTOCOMPLETE ---
+  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [inputNamaTim, setInputNamaTim] = useState('')
+  const [isSearching, setIsSearching] = useState(false)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -33,6 +39,8 @@ export default function RegisterPeserta() {
       if (data) {
         setProfile(data)
         if (data.avatar_url) setPreviewUrl(data.avatar_url)
+        // Sinkronisasi input nama tim dengan data profil yang ada
+        if (data.tim_kelompok?.nama) setInputNamaTim(data.tim_kelompok.nama)
       } else {
         setProfile({}) 
       }
@@ -41,6 +49,46 @@ export default function RegisterPeserta() {
 
     fetchProfile()
   }, [])
+
+  // --- LOGIKA PENCARIAN (AUTOCOMPLETE) ---
+  const handleSearchTim = async (val: string) => {
+    setInputNamaTim(val)
+    
+    // Cari jika input lebih dari 1 karakter
+    if (val.length > 1) {
+      setIsSearching(true)
+      const { data } = await supabase
+        .from('tim_perkawinan')
+        .select('*')
+        // Filter berdasarkan peran petugas kelompok
+        .eq('dapukan', 'Tim Perkawinan Kelompok')
+        .ilike('nama', `%${val}%`)
+        .limit(5)
+      
+      setSuggestions(data || [])
+      setShowSuggestions(true)
+      setIsSearching(false)
+    } else {
+      setSuggestions([])
+      setShowSuggestions(false)
+    }
+  }
+
+  // --- LOGIKA MEMILIH SUGGESTION ---
+  const selectSuggestion = (tim: any) => {
+    setInputNamaTim(tim.nama)
+    setShowSuggestions(false)
+    
+    // Update state profile agar input WA dan Alamat terisi otomatis (via defaultValue & key)
+    setProfile((prev: any) => ({
+      ...prev,
+      tim_kelompok: {
+        ...prev?.tim_kelompok,
+        nomor_telepon: tim.nomor_telepon,
+        alamat_lengkap: tim.alamat_lengkap
+      }
+    }))
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -81,7 +129,9 @@ export default function RegisterPeserta() {
 
     // LOGIKA PENDAFTARAN/PEMBARUAN TIM KELOMPOK KE TABEL tim_perkawinan
     let currentTimKelompokId = profile?.tim_kelompok_id || null
-    const namaTimInput = formData.get('nama_tim_kelompok') as string
+    
+    // Gunakan inputNamaTim dari state, bukan langsung dari formData karena autocomplete
+    const namaTimInput = inputNamaTim 
     const waTimInput = formData.get('wa_tim_kelompok') as string
     const alamatTimInput = formData.get('alamat_tim_kelompok') as string
 
@@ -156,7 +206,7 @@ export default function RegisterPeserta() {
 
   return (
     <div className="min-h-screen bg-white py-6">
-      <div className="max-w-2xl mx-auto p-6 md:p-8 bg-white shadow-lg rounded-3xl border border-gray-100 text-slate-900">
+      <div className="max-w-2xl mx-auto p-6 md:p-8 bg-white shadow-lg rounded-3xl border border-gray-100 text-slate-900 overflow-visible">
         
         <div className="flex justify-end mb-4">
           <button 
@@ -314,39 +364,68 @@ export default function RegisterPeserta() {
             <textarea name="kriteria_calon_pasangan" defaultValue={profile?.kriteria_calon_pasangan} rows={2} className="p-2 text-xs border border-gray-200 rounded-lg text-slate-800 bg-white font-medium" placeholder="Sebutkan kriteria khusus..." />
           </div>
 
-          {/* --- 4. BAGIAN TIM PERKAWINAN KELOMPOK (DIPERBAIKI) --- */}
+          {/* --- 4. BAGIAN TIM PERKAWINAN KELOMPOK (AUTOCOMPLETE DITAMBAHKAN DI SINI) --- */}
           <div className="md:col-span-2 text-emerald-800 font-black border-l-4 border-emerald-600 pl-2 text-[11px] uppercase tracking-wider mt-3 flex items-center gap-2">
             <ShieldCheck size={14} /> Tim Perkawinan Kelompok
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 relative z-50">
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1 flex items-center gap-1"><User size={10}/> Nama Petugas</label>
-            <input 
-              name="nama_tim_kelompok" 
-              placeholder="Nama Lengkap Petugas"
-              defaultValue={profile?.tim_kelompok?.nama}
-              className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-bold" 
-              required
-            />
+            <div className="relative">
+              <input 
+                name="nama_tim_kelompok" 
+                placeholder="Nama Lengkap Petugas"
+                value={inputNamaTim}
+                autoComplete="off"
+                onChange={(e) => handleSearchTim(e.target.value)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay agar onClick bisa jalan sebelum hide
+                className="w-full p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-bold" 
+                required
+              />
+              {isSearching && <Loader2 size={12} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-emerald-500" />}
+            </div>
+
+            {/* Dropdown Suggestion */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-xl shadow-2xl z-999 overflow-hidden mt-1 animate-in fade-in zoom-in-95 duration-200 border-t-4 border-t-emerald-500">
+                <p className="bg-slate-50 px-3 py-1.5 text-[8px] font-black text-slate-400 uppercase tracking-widest border-b border-gray-100">Database Petugas:</p>
+                {suggestions.map((tim) => (
+                  <button
+                    key={tim.id}
+                    type="button"
+                    onMouseDown={() => selectSuggestion(tim)} // Gunakan onMouseDown agar prioritas lebih tinggi dari onBlur input
+                    className="w-full text-left px-3 py-2.5 hover:bg-emerald-50 transition-colors flex items-center justify-between group"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold text-slate-700 group-hover:text-emerald-700 truncate capitalize">{tim.nama}</p>
+                      <p className="text-[9px] text-slate-400 truncate tracking-tighter">{tim.alamat_lengkap || 'Alamat tidak tersedia'}</p>
+                    </div>
+                    <Check size={12} className="text-emerald-500 opacity-0 group-hover:opacity-100" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-black text-slate-500 uppercase ml-1 flex items-center gap-1"><Phone size={10}/> WhatsApp Petugas</label>
+          <div className="flex flex-col gap-1 relative z-0">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1 flex items-center gap-1"><Phone size={10}/>No. WhatsApp</label>
             <input 
               name="wa_tim_kelompok" 
               placeholder="628..."
               defaultValue={profile?.tim_kelompok?.nomor_telepon}
+              key={`wa-${profile?.tim_kelompok?.nomor_telepon}`} // Key unik agar input re-render saat data dipilih
               className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-bold" 
               required
             />
           </div>
 
-          <div className="md:col-span-2 flex flex-col gap-1">
-            <label className="text-[10px] font-black text-slate-500 uppercase ml-1 flex items-center gap-1"><MapPin size={10}/> Alamat Petugas</label>
+          <div className="md:col-span-2 flex flex-col gap-1 relative z-0">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1 flex items-center gap-1"><MapPin size={10}/> Alamat/Kelompok</label>
             <input 
               name="alamat_tim_kelompok" 
               placeholder="Alamat Lengkap Petugas Kelompok"
               defaultValue={profile?.tim_kelompok?.alamat_lengkap}
+              key={`addr-${profile?.tim_kelompok?.alamat_lengkap}`} // Key unik agar input re-render saat data dipilih
               className="p-2 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 bg-white font-medium" 
               required
             />
@@ -357,7 +436,7 @@ export default function RegisterPeserta() {
             disabled={loading}
             className="md:col-span-2 bg-emerald-600 text-white py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-emerald-700 disabled:bg-gray-400 transition-all shadow-md active:scale-95 mt-4 mb-6 flex items-center justify-center gap-2"
           >
-            {loading ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div> : <Save size={14} />}
+            {loading ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
             {loading ? 'Menyimpan...' : 'Simpan Perubahan ✨'}
           </button>
         </form>

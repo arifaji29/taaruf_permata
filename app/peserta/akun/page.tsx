@@ -145,7 +145,7 @@ export default function AkunPeserta() {
                 </div>
                 <div className="md:col-span-2 space-y-1 pt-1 border-t border-gray-50">
                   <p className="text-[8px] font-black text-slate-400 uppercase flex items-center gap-1">
-                    <MapPin size={8} /> Alamat Petugas
+                    <MapPin size={8} /> Alamat/Kelompok
                   </p>
                   <p className="text-[11px] font-medium text-slate-600 leading-relaxed italic">
                     {profile.tim_kelompok.alamat_lengkap || 'Alamat belum diisi'}
