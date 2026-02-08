@@ -1,7 +1,7 @@
 import { createClient } from '../utils/supabase/server'
 import Link from 'next/link'
 import Navbar from '@/components/navbar'
-import { Search } from 'lucide-react' // Impor ikon search
+import { Search, Loader2 } from 'lucide-react' // Impor ikon tambahan
 
 interface Peserta {
   id: string;
@@ -12,15 +12,16 @@ interface Peserta {
   kelompok?: string;
   tanggal_lahir: string;
   avatar_url?: string;
+  status_taaruf?: string; // Tambahkan field status taaruf
 }
 
 export default async function PesertaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ gender?: string; q?: string }>; // Tambahkan q (query) ke params
+  searchParams: Promise<{ gender?: string; q?: string }>;
 }) {
   const supabase = await createClient()
-  const { gender, q } = await searchParams // Ambil nilai pencarian dari URL
+  const { gender, q } = await searchParams 
   const { data: { user } } = await supabase.auth.getUser()
 
   let userProfile = null;
@@ -45,7 +46,8 @@ export default async function PesertaPage({
   // --- LOGIKA FILTER OTOMATIS ---
   let query = supabase
     .from('peserta')
-    .select('id, nama, bin_binti, jenis_kelamin, pekerjaan, kelompok, tanggal_lahir, avatar_url')
+    // Tambahkan status_taaruf ke dalam select
+    .select('id, nama, bin_binti, jenis_kelamin, pekerjaan, kelompok, tanggal_lahir, avatar_url, status_taaruf')
     .eq('is_visible', true)
 
   if (!isAdmin) {
@@ -56,14 +58,12 @@ export default async function PesertaPage({
     }
   }
 
-  // Filter manual tetap aktif untuk Admin
   if (gender === 'Laki-laki' || gender === 'Perempuan') {
     query = query.eq('jenis_kelamin', gender)
   }
 
-  // --- LOGIKA PENCARIAN (BARU) ---
   if (q) {
-    query = query.ilike('nama', `%${q}%`) // Mencari nama yang mirip dengan input
+    query = query.ilike('nama', `%${q}%`) 
   }
 
   const { data: peserta, error } = await query.order('created_at', { ascending: false });
@@ -76,6 +76,16 @@ export default async function PesertaPage({
     const m = today.getMonth() - birthDate.getMonth()
     if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--
     return age
+  }
+
+  // Fungsi untuk menentukan warna label status
+  const getStatusStyle = (status?: string) => {
+    switch (status) {
+      case 'Proses Taaruf': return 'bg-orange-500 text-white';
+      case 'Khidbah': return 'bg-blue-600 text-white';
+      case 'Menikah': return 'bg-emerald-600 text-white';
+      default: return 'bg-slate-100 text-slate-500 border border-slate-200';
+    }
   }
 
   if (error) console.error('Error fetching data:', error.message);
@@ -92,12 +102,9 @@ export default async function PesertaPage({
           <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest opacity-70 mt-1">Database Peserta Permata</p>
         </header>
 
-        {/* SEARCH BAR SECTION (BARU) */}
         <div className="mb-6">
           <form action="/peserta" method="GET" className="relative group">
-            {/* Mempertahankan filter gender saat mencari */}
             {gender && <input type="hidden" name="gender" value={gender} />}
-            
             <input 
               name="q"
               type="text"
@@ -109,7 +116,6 @@ export default async function PesertaPage({
           </form>
         </div>
 
-        {/* Kondisi: Hanya tampilkan Tombol Filter jika user adalah ADMIN */}
         {isAdmin && (
           <div className="flex bg-white/50 backdrop-blur-md p-1 rounded-full border border-white/80 shadow-sm w-fit mb-8 animate-in fade-in duration-500">
             <Link href="/peserta" className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase transition-all ${!gender ? 'bg-emerald-600 text-white shadow-md' : 'text-emerald-700'}`}>Semua</Link>
@@ -137,11 +143,20 @@ export default async function PesertaPage({
                       {p.nama?.charAt(0)}
                     </div>
                   )}
+
+                  {/* Label Gender - Fitur Lama */}
                   <div className={`absolute top-3 right-3 px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest backdrop-blur-md text-white ${
                     p.jenis_kelamin === 'Laki-laki' ? 'bg-blue-500/80' : 'bg-rose-500/80'
                   }`}>
                     {p.jenis_kelamin === 'Laki-laki' ? 'Ikhwan' : 'Akhwat'}
                   </div>
+
+                  {/* Label Status Progress Taaruf - Fitur Baru */}
+                  {p.status_taaruf && p.status_taaruf !== 'Tersedia' && (
+                    <div className={`absolute bottom-3 left-3 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter shadow-lg ${getStatusStyle(p.status_taaruf)} animate-pulse`}>
+                      {p.status_taaruf}
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-4 flex flex-col flex-1 text-slate-900">
