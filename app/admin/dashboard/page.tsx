@@ -16,7 +16,10 @@ import {
   X,
   LayoutDashboard,
   Settings,
-  UserCheck // Impor ikon untuk menu Tim Perkawinan
+  UserCheck,
+  MessageSquare,
+  HeartHandshake,
+  Award
 } from 'lucide-react'
 
 export default function AdminDashboard() {
@@ -80,7 +83,6 @@ export default function AdminDashboard() {
               {isMenuOpen ? <X size={20} /> : <MoreVertical size={20} />}
             </button>
 
-            {/* NAV MENU KONSISTEN DENGAN TIM PERKAWINAN */}
             {isMenuOpen && (
               <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <Link href="/admin/dashboard" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-emerald-700 bg-emerald-50/50">
@@ -89,7 +91,6 @@ export default function AdminDashboard() {
                 <Link href="/admin/blog" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-orange-700">
                   <FileText size={14} className="text-orange-500" /> Kelola Blog
                 </Link>
-                {/* MENU TIM PERKAWINAN DIKEMBALIKAN */}
                 <Link href="/admin/tim-perkawinan" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700">
                   <UserCheck size={14} className="text-indigo-500" /> Tim Perkawinan
                 </Link>
@@ -138,75 +139,96 @@ export default function AdminDashboard() {
 
         {/* GRID PESERTA */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredPeserta.map((p) => (
-            <div key={p.id} className="bg-white rounded-3xl shadow-md border border-gray-100 overflow-hidden flex flex-col relative transition-all hover:shadow-lg">
-              
-              {/* PEMINAT ACCORDION */}
-              {p.peminat && p.peminat.length > 0 && (
-                <div className="absolute top-3 right-3 z-10 w-32">
-                  <button 
-                    onClick={() => setOpenAccordionId(openAccordionId === p.id ? null : p.id)}
-                    className="w-full bg-rose-500 text-white text-[8px] font-black px-2 py-1.5 rounded-full shadow-md flex items-center justify-between gap-1 active:scale-95 transition-all"
-                  >
-                    <span className="flex items-center gap-1"><Heart size={8} fill="white" /> {p.peminat.length} Tertarik</span>
-                    <ChevronDown size={10} className={`transition-transform duration-200 ${openAccordionId === p.id ? 'rotate-180' : ''}`} />
-                  </button>
+          {filteredPeserta.map((p) => {
+            // LOGIKA FILTER LABEL TERTARIK: Hanya tampil jika status bukan Dilamar/Menikah
+            const showTertarikLabel = p.peminat && p.peminat.length > 0 && p.status_taaruf !== 'Dilamar' && p.status_taaruf !== 'Menikah';
+            const isMan = p.jenis_kelamin === 'Laki-laki';
 
-                  {openAccordionId === p.id && (
-                    <div className="absolute top-full right-0 mt-1 w-44 bg-white border border-rose-100 rounded-xl shadow-xl p-2 animate-in fade-in slide-in-from-top-1 z-50">
-                      <p className="text-[8px] font-black text-rose-500 uppercase mb-1 border-b pb-0.5">Daftar Peminat:</p>
-                      <div className="max-h-24 overflow-y-auto space-y-1">
-                        {p.peminat.map((m: any) => (
-                          <div key={m.id} className="text-[9px] font-bold text-slate-700 py-0.5 flex items-center gap-1.5 leading-none border-b border-gray-50 last:border-0">
-                            <span className="w-1 h-1 rounded-full bg-rose-300"></span> {m.pengirim?.nama || 'Tanpa Nama'}
-                          </div>
-                        ))}
+            return (
+              <div key={p.id} className="bg-white rounded-3xl shadow-md border border-gray-100 overflow-hidden flex flex-col relative transition-all hover:shadow-lg">
+                
+                {/* PEMINAT ACCORDION */}
+                {showTertarikLabel && (
+                  <div className="absolute top-3 right-3 z-10 w-32">
+                    <button 
+                      onClick={() => setOpenAccordionId(openAccordionId === p.id ? null : p.id)}
+                      className="w-full bg-rose-500 text-white text-[8px] font-black px-2 py-1.5 rounded-full shadow-md flex items-center justify-between gap-1 active:scale-95 transition-all"
+                    >
+                      <span className="flex items-center gap-1"><Heart size={8} fill="white" /> {p.peminat.length} Tertarik</span>
+                      <ChevronDown size={10} className={`transition-transform duration-200 ${openAccordionId === p.id ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {openAccordionId === p.id && (
+                      <div className="absolute top-full right-0 mt-1 w-44 bg-white border border-rose-100 rounded-xl shadow-xl p-2 animate-in fade-in slide-in-from-top-1 z-50">
+                        <p className="text-[8px] font-black text-rose-500 uppercase mb-1 border-b pb-0.5">Daftar Peminat:</p>
+                        <div className="max-h-24 overflow-y-auto space-y-1">
+                          {p.peminat.map((m: any) => (
+                            <div key={m.id} className="text-[9px] font-bold text-slate-700 py-0.5 flex items-center gap-1.5 leading-none border-b border-gray-50 last:border-0">
+                              <span className="w-1 h-1 rounded-full bg-rose-300"></span> {m.pengirim?.nama || 'Tanpa Nama'}
+                            </div>
+                          ))}
+                        </div>
                       </div>
+                    )}
+                  </div>
+                )}
+
+                {/* LABEL STATUS PROGRESS (BARU) */}
+                {p.status_taaruf && (
+                  <div className={`absolute ${showTertarikLabel && !isMan ? 'top-12' : 'top-3'} right-3 z-10`}>
+                    <div className={`px-2 py-1 rounded-lg text-[7px] font-black uppercase flex items-center gap-1 shadow-sm border ${
+                      p.status_taaruf === 'Mediasi' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                      p.status_taaruf === 'Dilamar' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                      'bg-amber-50 text-amber-600 border-amber-100'
+                    }`}>
+                      {p.status_taaruf === 'Mediasi' ? <MessageSquare size={8} /> :
+                       p.status_taaruf === 'Dilamar' ? <HeartHandshake size={8} /> :
+                       <Award size={8} />}
+                      {isMan && p.status_taaruf === 'Dilamar' ? 'MELAMAR' : p.status_taaruf}
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
 
-              <div className="p-4 border-b border-gray-50 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-emerald-50 shrink-0 border border-white shadow-sm flex items-center justify-center">
-                  {p.avatar_url ? (
-                    <img src={p.avatar_url} className="w-full h-full object-cover" alt={p.nama} />
-                  ) : (
-                    <Users size={20} className="text-emerald-200" />
-                  )}
+                <div className="p-4 border-b border-gray-50 flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-emerald-50 shrink-0 border border-white shadow-sm flex items-center justify-center">
+                    {p.avatar_url ? (
+                      <img src={p.avatar_url} className="w-full h-full object-cover" alt={p.nama} />
+                    ) : (
+                      <Users size={20} className="text-emerald-200" />
+                    )}
+                  </div>
+                  <div className="min-w-0 pr-24">
+                    <h2 className="text-sm font-black text-slate-800 uppercase truncate leading-none mb-0.5">{p.nama}</h2>
+                    <p className="text-[9px] font-bold text-emerald-600 uppercase italic truncate">
+                      {p.jenis_kelamin === 'Laki-laki' ? 'bin' : 'binti'} {p.bin_binti || '-'}
+                    </p>
+                    <p className="text-[8px] font-black text-slate-400 uppercase mt-0.5">
+                      {hitungUmur(p.tanggal_lahir)} thn • {p.kelompok || 'Kelompok -'}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0 pr-24">
-                  <h2 className="text-sm font-black text-slate-800 uppercase truncate leading-none mb-0.5">{p.nama}</h2>
-                  <p className="text-[9px] font-bold text-emerald-600 uppercase italic truncate">
-                    {p.jenis_kelamin === 'Laki-laki' ? 'bin' : 'binti'} {p.bin_binti || '-'}
-                  </p>
-                  <p className="text-[8px] font-black text-slate-400 uppercase mt-0.5">
-                    {hitungUmur(p.tanggal_lahir)} thn • {p.kelompok || 'Kelompok -'}
-                  </p>
-                </div>
-              </div>
 
-              {/* ACTION BUTTONS */}
-              <div className="p-3 bg-gray-50/30 space-y-2 grow">
-                {/* TOMBOL KELOLA TETAP ADA */}
-                <Link 
-                  href={`/admin/dashboard/kelola/${p.id}`} 
-                  className="w-full bg-emerald-700 text-white py-2.5 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-md flex items-center justify-center gap-1.5"
-                >
-                  <Settings size={10} strokeWidth={3} /> Kelola
-                </Link>
-
-                <div className="flex gap-2">
-                  <Link href={`/peserta/${p.id}`} className="flex-1 text-center bg-white text-slate-600 py-2.5 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-gray-100 transition-colors flex items-center justify-center gap-1.5 border border-gray-200">
-                    <ExternalLink size={10} /> Detail
+                {/* ACTION BUTTONS */}
+                <div className="p-3 bg-gray-50/30 space-y-2 grow">
+                  <Link 
+                    href={`/admin/dashboard/kelola/${p.id}`} 
+                    className="w-full bg-emerald-700 text-white py-2.5 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-md flex items-center justify-center gap-1.5"
+                  >
+                    <Settings size={10} strokeWidth={3} /> Kelola
                   </Link>
-                  <a href={`https://wa.me/${p.nomor_telepon?.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-white text-emerald-600 py-2.5 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all border border-emerald-100 flex items-center justify-center gap-1.5">
-                    <MessageCircle size={10} fill="currentColor" /> Hubungi
-                  </a>
+
+                  <div className="flex gap-2">
+                    <Link href={`/peserta/${p.id}`} className="flex-1 text-center bg-white text-slate-600 py-2.5 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-gray-100 transition-colors flex items-center justify-center gap-1.5 border border-gray-200">
+                      <ExternalLink size={10} /> Detail
+                    </Link>
+                    <a href={`https://wa.me/${p.nomor_telepon?.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex-1 text-center bg-white text-emerald-600 py-2.5 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all border border-emerald-100 flex items-center justify-center gap-1.5">
+                      <MessageCircle size={10} fill="currentColor" /> Hubungi
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </main>
