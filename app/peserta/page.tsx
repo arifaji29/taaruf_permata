@@ -1,7 +1,7 @@
 import { createClient } from '../utils/supabase/server'
 import Link from 'next/link'
 import Navbar from '@/components/navbar'
-import { Search, Loader2 } from 'lucide-react' // Impor ikon tambahan
+import { Search, Loader2 } from 'lucide-react'
 
 interface Peserta {
   id: string;
@@ -12,7 +12,7 @@ interface Peserta {
   kelompok?: string;
   tanggal_lahir: string;
   avatar_url?: string;
-  status_taaruf?: string; // Tambahkan field status taaruf
+  status_taaruf?: string; // Field ini sekarang kita isi secara manual (computed)
 }
 
 export default async function PesertaPage({
@@ -43,11 +43,11 @@ export default async function PesertaPage({
     await supabase.auth.signOut()
   }
 
-  // --- LOGIKA FILTER OTOMATIS ---
+  // --- 1. QUERY DATA PESERTA ---
+  // Hapus 'status_taaruf' dari sini karena kolomnya sudah tidak ada di tabel peserta
   let query = supabase
     .from('peserta')
-    // Tambahkan status_taaruf ke dalam select
-    .select('id, nama, bin_binti, jenis_kelamin, pekerjaan, kelompok, tanggal_lahir, avatar_url, status_taaruf')
+    .select('id, nama, bin_binti, jenis_kelamin, pekerjaan, kelompok, tanggal_lahir, avatar_url') 
     .eq('is_visible', true)
 
   if (!isAdmin) {
@@ -66,7 +66,25 @@ export default async function PesertaPage({
     query = query.ilike('nama', `%${q}%`) 
   }
 
-  const { data: peserta, error } = await query.order('created_at', { ascending: false });
+  const { data: rawPeserta, error } = await query.order('created_at', { ascending: false });
+
+  // --- 2. QUERY DATA RELASI (TAARUF_PASANGAN) ---
+  // Kita ambil semua data hubungan untuk dicocokkan
+  const { data: relations } = await supabase
+    .from('taaruf_pasangan')
+    .select('ikhwan_id, akhwat_id, status');
+
+  // --- 3. GABUNGKAN DATA (MAPPING) ---
+  const peserta: Peserta[] = (rawPeserta || []).map((p: any) => {
+    // Cari apakah peserta ini ada di tabel hubungan (sebagai ikhwan atau akhwat)
+    const relasi = relations?.find((r: any) => r.ikhwan_id === p.id || r.akhwat_id === p.id);
+    
+    // Jika ada relasi, ambil statusnya. Jika tidak, kosong.
+    return {
+      ...p,
+      status_taaruf: relasi ? relasi.status : null
+    };
+  });
 
   const hitungUmur = (tanggalLahir: string) => {
     if (!tanggalLahir) return '??'
@@ -81,10 +99,11 @@ export default async function PesertaPage({
   // Fungsi untuk menentukan warna label status
   const getStatusStyle = (status?: string) => {
     switch (status) {
-      case 'Proses Taaruf': return 'bg-orange-500 text-white';
-      case 'Khidbah': return 'bg-blue-600 text-white';
+      case 'Mediasi': return 'bg-orange-500 text-white'; // Mediasi
+      case 'Melamar': return 'bg-rose-500 text-white'; // Melamar/Dilamar
+      case 'Dilamar': return 'bg-rose-500 text-white'; // Melamar/Dilamar
       case 'Menikah': return 'bg-emerald-600 text-white';
-      default: return 'bg-slate-100 text-slate-500 border border-slate-200';
+      default: return 'hidden'; // Sembunyikan jika null/kosong
     }
   }
 
@@ -144,17 +163,17 @@ export default async function PesertaPage({
                     </div>
                   )}
 
-                  {/* Label Gender - Fitur Lama */}
+                  {/* Label Gender */}
                   <div className={`absolute top-3 right-3 px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest backdrop-blur-md text-white ${
                     p.jenis_kelamin === 'Laki-laki' ? 'bg-blue-500/80' : 'bg-rose-500/80'
                   }`}>
                     {p.jenis_kelamin === 'Laki-laki' ? 'Ikhwan' : 'Akhwat'}
                   </div>
 
-                  {/* Label Status Progress Taaruf - Fitur Baru */}
-                  {p.status_taaruf && p.status_taaruf !== 'Tersedia' && (
+                  {/* Label Status Progress Taaruf (Computed from taaruf_pasangan) */}
+                  {p.status_taaruf && (
                     <div className={`absolute bottom-3 left-3 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter shadow-lg ${getStatusStyle(p.status_taaruf)} animate-pulse`}>
-                      {p.status_taaruf}
+                      {p.status_taaruf === 'Melamar' ? 'Proses' : p.status_taaruf}
                     </div>
                   )}
                 </div>

@@ -11,7 +11,8 @@ import {
   Award,
   RotateCcw,
   Trash2,
-  User as UserIcon
+  User as UserIcon,
+  UserX 
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -21,87 +22,147 @@ export default function KelolaPendampingPage({ params }: { params: Promise<{ id:
   const router = useRouter()
   
   const [peserta, setPeserta] = useState<any>(null)
+  const [hubungan, setHubungan] = useState<any>(null) // State untuk data dari tabel taaruf_pasangan
   const [listTim, setListTim] = useState<any[]>([])
-  const [listAkhwat, setListAkhwat] = useState<any[]>([]) 
+  const [listPasangan, setListPasangan] = useState<any[]>([]) 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   const isMan = peserta?.jenis_kelamin === 'Laki-laki'
+  
   const opsiStatus = [
     { label: 'Mediasi', value: 'Mediasi', icon: <MessageSquare size={14} className="text-blue-500" /> },
-    { label: isMan ? 'Melamar' : 'Dilamar', value: 'Dilamar', icon: <HeartHandshake size={14} className="text-rose-500" /> },
+    { label: 'Melamar / Dilamar', value: 'Melamar', icon: <HeartHandshake size={14} className="text-rose-500" /> },
     { label: 'Menikah', value: 'Menikah', icon: <Award size={14} className="text-amber-500" /> }
   ]
 
   useEffect(() => {
     const fetchData = async () => {
+      // 1. Ambil data peserta utama
       const { data: p } = await supabase.from('peserta').select('*').eq('id', id).single()
       const { data: t } = await supabase.from('tim_perkawinan').select('*').order('nama', { ascending: true })
       
-      if (p?.jenis_kelamin === 'Laki-laki') {
-        const { data: ak } = await supabase.from('peserta').select('id, nama').eq('jenis_kelamin', 'Perempuan').order('nama')
-        if (ak) setListAkhwat(ak)
+      if (p) {
+        setPeserta(p)
+        const jenisKelaminLawan = p.jenis_kelamin === 'Laki-laki' ? 'Perempuan' : 'Laki-laki'
+
+        // 2. Cek apakah peserta ini sudah punya pasangan di tabel taaruf_pasangan
+        // Kita cari baris dimana ID dia muncul sebagai ikhwan_id ATAU akhwat_id
+        let currentRelation = null
+        if (p.jenis_kelamin === 'Laki-laki') {
+           const { data: rel } = await supabase.from('taaruf_pasangan').select('*').eq('ikhwan_id', id).single()
+           currentRelation = rel
+        } else {
+           const { data: rel } = await supabase.from('taaruf_pasangan').select('*').eq('akhwat_id', id).single()
+           currentRelation = rel
+        }
+        setHubungan(currentRelation)
+
+        // 3. Ambil daftar calon pasangan (Lawan Jenis)
+        const { data: candidates } = await supabase
+          .from('peserta')
+          .select('id, nama')
+          .eq('jenis_kelamin', jenisKelaminLawan)
+          .order('nama')
+
+        // 4. Ambil semua ID yang SUDAH berpasangan (sibuk) dari tabel taaruf_pasangan
+        const { data: busyData } = await supabase.from('taaruf_pasangan').select('ikhwan_id, akhwat_id')
+        
+        const busyIds = new Set()
+        busyData?.forEach((row: any) => {
+          busyIds.add(row.ikhwan_id)
+          busyIds.add(row.akhwat_id)
+        })
+
+        if (candidates) {
+          // FILTER: Tampilkan hanya yang TIDAK sibuk ATAU yang sedang berpasangan dengan user ini
+          const available = candidates.filter(c => {
+            // Jika dia adalah pasangan user ini saat ini, tetap tampilkan
+            const isMyPartner = (p.jenis_kelamin === 'Laki-laki' && currentRelation?.akhwat_id === c.id) ||
+                                (p.jenis_kelamin === 'Perempuan' && currentRelation?.ikhwan_id === c.id)
+            
+            // Jika tidak sibuk atau dia adalah pasangan saya, tampilkan
+            return !busyIds.has(c.id) || isMyPartner
+          })
+          setListPasangan(available)
+        }
       }
 
-      if (p) setPeserta(p)
       if (t) setListTim(t)
       setLoading(false)
     }
     fetchData()
   }, [id])
 
-  const handleUpdate = async (field: string, value: any) => {
+  // --- UPDATE LOGIC (Skema Baru: taaruf_pasangan) ---
+  const handleUpdatePasangan = async (partnerId: string) => {
     setSaving(true)
-    const val = value === "" ? null : value
     
-    // --- LOGIKA SINKRONISASI & RESET OTOMATIS ---
-    if (field === 'status_taaruf') {
-      // A. LOGIKA UNTUK LAKI-LAKI
-      if (isMan) {
-        const targetId = peserta?.melamar_id
-        if (targetId) {
-          if (val === 'Mediasi' || val === null) {
-            // Hapus data lamaran di pihak Perempuan
-            await supabase.from('peserta').update({ 
-              status_taaruf: null, 
-              dilamar_oleh_nama: null 
-            }).eq('id', targetId)
-          } else {
-            // Update status Lamaran/Menikah di pihak Perempuan
-            await supabase.from('peserta').update({ 
-              status_taaruf: val, 
-              dilamar_oleh_nama: peserta.nama 
-            }).eq('id', targetId)
-            // Hapus data tertarik
-            await supabase.from('tertarik').delete().or(`pemberi_id.eq.${id},penerima_id.eq.${id}`)
-            await supabase.from('tertarik').delete().or(`pemberi_id.eq.${targetId},penerima_id.eq.${targetId}`)
-          }
-        }
-      } 
-      // B. LOGIKA UNTUK PEREMPUAN
-      else if (!isMan && (val === 'Mediasi' || val === null)) {
-        // Cari laki-laki yang melamarnya (yang melamar_id-nya adalah ID perempuan ini)
-        const { data: pelamar } = await supabase.from('peserta')
-          .select('id')
-          .eq('melamar_id', id)
-          .single()
+    // Jika memilih "Reset" / Kosong
+    if (!partnerId) {
+      if (hubungan) {
+        // Hapus relasi di tabel taaruf_pasangan
+        await supabase.from('taaruf_pasangan').delete().eq('id', hubungan.id)
+        setHubungan(null)
+      }
+    } else {
+      // Jika memilih pasangan baru
+      // Cek dulu apakah sudah ada hubungan?
+      if (hubungan) {
+        // Update pasangan yang ada (Ganti orang)
+        const updatePayload = isMan ? { akhwat_id: partnerId } : { ikhwan_id: partnerId }
+        const { data } = await supabase.from('taaruf_pasangan').update(updatePayload).eq('id', hubungan.id).select().single()
+        setHubungan(data)
+      } else {
+        // Buat hubungan baru (Insert)
+        const insertPayload = isMan 
+          ? { ikhwan_id: id, akhwat_id: partnerId, status: 'Mediasi' }
+          : { ikhwan_id: partnerId, akhwat_id: id, status: 'Mediasi' }
         
-        if (pelamar) {
-          // Balikkan status laki-laki ke Mediasi
-          await supabase.from('peserta').update({ status_taaruf: 'Mediasi' }).eq('id', pelamar.id)
+        const { data, error } = await supabase.from('taaruf_pasangan').insert(insertPayload).select().single()
+        
+        if (error) {
+          alert("Gagal membuat pasangan: " + error.message)
+        } else {
+          setHubungan(data)
+          // Bersihkan data tertarik/peminat sampah jika ada
+          await supabase.from('tertarik').delete().or(`pemberi_id.eq.${id},penerima_id.eq.${id}`)
+          await supabase.from('admin_peserta').delete().or(`pengirim_id.eq.${id},target_id.eq.${id}`)
         }
-        // Hapus keterangan "dilamar oleh" pada dirinya sendiri
-        await supabase.from('peserta').update({ dilamar_oleh_nama: null }).eq('id', id)
-        setPeserta((prev: any) => ({ ...prev, dilamar_oleh_nama: null }))
       }
     }
+    setSaving(false)
+  }
 
-    const { error } = await supabase.from('peserta').update({ [field]: val }).eq('id', id)
+  const handleUpdateStatus = async (newStatus: string) => {
+    if (!hubungan) return // Tidak bisa ubah status jika belum punya pasangan
+    setSaving(true)
     
-    if (!error) {
-      setPeserta((prev: any) => ({ ...prev, [field]: val }))
+    // Reset/Hapus Hubungan
+    if (newStatus === '') {
+        await supabase.from('taaruf_pasangan').delete().eq('id', hubungan.id)
+        setHubungan(null)
     } else {
-      alert("Gagal memperbarui: " + error.message)
+        // Update Status
+        const { data, error } = await supabase
+          .from('taaruf_pasangan')
+          .update({ status: newStatus })
+          .eq('id', hubungan.id)
+          .select()
+          .single()
+        
+        if (!error) setHubungan(data)
+    }
+    setSaving(false)
+  }
+
+  const handleUpdateTim = async (field: string, value: any) => {
+    // Update data TIM tetap di tabel peserta
+    setSaving(true)
+    const val = value === "" ? null : value
+    const { error } = await supabase.from('peserta').update({ [field]: val }).eq('id', id)
+    if (!error) {
+      setPeserta({ ...peserta, [field]: val })
     }
     setSaving(false)
   }
@@ -109,18 +170,27 @@ export default function KelolaPendampingPage({ params }: { params: Promise<{ id:
   const handleHapusPeserta = async () => {
     if (confirm("Apakah Anda yakin ingin menghapus profil peserta ini secara permanen?")) {
       setSaving(true)
-      const { error } = await supabase.from('peserta').delete().eq('id', id)
-      if (!error) {
+      try {
+        // Hapus Profil Utama (Cascade di DB akan otomatis menghapus taaruf_pasangan)
+        const { error } = await supabase.from('peserta').delete().eq('id', id)
+        if (error) throw error
+
         alert("Peserta berhasil dihapus")
+        router.refresh()
         router.push('/admin/dashboard')
-      } else {
-        alert("Gagal menghapus: " + error.message)
+      } catch (err: any) {
+        alert("Gagal menghapus: " + err.message)
+      } finally {
         setSaving(false)
       }
     }
   }
 
   if (loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div></div>
+
+  // Helper untuk mendapatkan ID pasangan saat ini dari state hubungan
+  const currentPartnerId = hubungan ? (isMan ? hubungan.akhwat_id : hubungan.ikhwan_id) : ""
+  const currentStatus = hubungan ? hubungan.status : ""
 
   return (
     <main className="min-h-screen bg-gray-50 py-6 px-4 text-slate-900 font-sans">
@@ -133,6 +203,7 @@ export default function KelolaPendampingPage({ params }: { params: Promise<{ id:
           <h1 className="text-lg font-black text-emerald-900 uppercase tracking-tight leading-none">Kelola Peserta</h1>
         </div>
 
+        {/* INFO PESERTA */}
         <div className="bg-white p-4 rounded-4xl shadow-sm border border-emerald-50 flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 shrink-0 overflow-hidden flex items-center justify-center">
             {peserta?.avatar_url ? (
@@ -146,10 +217,11 @@ export default function KelolaPendampingPage({ params }: { params: Promise<{ id:
             <p className="text-[9px] font-bold text-emerald-600 uppercase mt-1 italic tracking-tighter">
               {peserta?.kelompok || 'Kelompok Belum Diisi'}
             </p>
-            {peserta?.dilamar_oleh_nama && (
-              <p className="text-[8px] bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full w-fit mt-1 font-black uppercase">
-                Dilamar Oleh: {peserta.dilamar_oleh_nama}
-              </p>
+            {/* Indikator Status di Header */}
+            {currentStatus && (
+               <span className="inline-block mt-1 px-2 py-0.5 bg-amber-50 text-amber-600 text-[8px] font-black uppercase rounded border border-amber-100">
+                 Status: {currentStatus}
+               </span>
             )}
           </div>
         </div>
@@ -170,7 +242,7 @@ export default function KelolaPendampingPage({ params }: { params: Promise<{ id:
                 <select
                   disabled={saving}
                   value={peserta?.[item.key] || ""}
-                  onChange={(e) => handleUpdate(item.key, e.target.value)}
+                  onChange={(e) => handleUpdateTim(item.key, e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-[11px] font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all appearance-none"
                 >
                   <option value="">-- Pilih Petugas --</option>
@@ -182,63 +254,66 @@ export default function KelolaPendampingPage({ params }: { params: Promise<{ id:
             ))}
           </div>
 
-          {/* PERBAIKAN POIN 1: Sembunyikan dropdown jika status masih Mediasi atau kosong */}
-          {isMan && peserta?.status_taaruf !== 'Mediasi' && peserta?.status_taaruf !== null && (
-            <div className="space-y-1 bg-rose-50/50 p-3 rounded-2xl border border-rose-100 animate-in slide-in-from-top-2 duration-300">
-              <label className="text-[9px] font-black text-rose-600 uppercase flex items-center gap-1.5 ml-1">
-                <HeartHandshake size={10} /> Peserta Perempuan yang Dilamar
-              </label>
+          {/* PILIH PASANGAN (DROPDOWN) */}
+          <div className="space-y-1 bg-rose-50/50 p-3 rounded-2xl border border-rose-100 animate-in slide-in-from-top-2 duration-300">
+            <label className="text-[9px] font-black text-rose-600 uppercase flex items-center gap-1.5 ml-1">
+              <HeartHandshake size={10} /> Pilih Pasangan ({isMan ? 'Akhwat' : 'Ikhwan'})
+            </label>
+            
+            {listPasangan.length > 0 ? (
               <select
                 disabled={saving}
-                value={peserta?.melamar_id || ""}
-                onChange={(e) => handleUpdate('melamar_id', e.target.value)}
+                value={currentPartnerId} 
+                onChange={(e) => handleUpdatePasangan(e.target.value)}
                 className="w-full p-2.5 rounded-xl border border-rose-200 bg-white text-[11px] font-bold text-rose-900 focus:ring-2 focus:ring-rose-500 outline-none transition-all appearance-none"
               >
-                <option value="">-- Pilih Akhwat --</option>
-                {listAkhwat.map((ak) => (
-                  <option key={ak.id} value={ak.id}>{ak.nama}</option>
+                <option value="">-- Belum Ada Pasangan --</option>
+                {listPasangan.map((p) => (
+                  <option key={p.id} value={p.id}>{p.nama}</option>
                 ))}
               </select>
-            </div>
-          )}
-
-          {/* STATUS PROSES TAARUF */}
-          <div className="space-y-3 pt-2">
-            <div className="flex justify-between items-end border-b border-gray-50 pb-1">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Status Proses Taaruf</p>
-              {peserta?.status_taaruf && (
-                <button onClick={() => handleUpdate('status_taaruf', "")} className="flex items-center gap-1 text-[8px] font-black text-rose-400 hover:text-rose-600 transition-colors uppercase">
-                  <RotateCcw size={8} /> Reset
-                </button>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-3 gap-2">
-              {opsiStatus.map((status) => (
-                <button
-                  key={status.value}
-                  type="button"
-                  disabled={saving || (isMan && status.value === 'Dilamar' && !peserta?.melamar_id)}
-                  onClick={() => handleUpdate('status_taaruf', status.value)}
-                  className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border transition-all active:scale-95 ${
-                    peserta?.status_taaruf === status.value
-                      ? 'bg-emerald-50 border-emerald-500 shadow-sm'
-                      : 'bg-gray-50/50 border-gray-100 opacity-60 hover:opacity-100'
-                  }`}
-                >
-                  {status.icon}
-                  <span className={`text-[9px] font-black uppercase tracking-tighter ${
-                    peserta?.status_taaruf === status.value ? 'text-emerald-700' : 'text-slate-400'
-                  }`}>
-                    {status.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-            {isMan && !peserta?.melamar_id && (
-              <p className="text-[8px] text-rose-400 font-bold italic">*Pilih akhwat terlebih dahulu untuk melamar</p>
+            ) : (
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-white/50 border border-rose-100 text-rose-400">
+                <UserX size={14} />
+                <span className="text-[10px] font-bold italic">Belum ada calon pasangan yang tersedia.</span>
+              </div>
             )}
           </div>
+
+          {/* STATUS PROSES (Hanya muncul jika sudah ada pasangan) */}
+          {hubungan && (
+            <div className="space-y-3 pt-2">
+              <div className="flex justify-between items-end border-b border-gray-50 pb-1">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Status Hubungan</p>
+                <button onClick={() => handleUpdateStatus("")} className="flex items-center gap-1 text-[8px] font-black text-rose-400 hover:text-rose-600 transition-colors uppercase">
+                  <RotateCcw size={8} /> Reset status
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-2">
+                {opsiStatus.map((status) => (
+                  <button
+                    key={status.value}
+                    type="button"
+                    disabled={saving} 
+                    onClick={() => handleUpdateStatus(status.value)}
+                    className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl border transition-all active:scale-95 ${
+                      currentStatus === status.value
+                        ? 'bg-emerald-50 border-emerald-500 shadow-sm'
+                        : 'bg-gray-50/50 border-gray-100 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    {status.icon}
+                    <span className={`text-[9px] font-black uppercase tracking-tighter ${
+                      currentStatus === status.value ? 'text-emerald-700' : 'text-slate-400'
+                    }`}>
+                      {status.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="pt-2 flex flex-col gap-2">
             <button onClick={() => router.push('/admin/dashboard')} className="w-full bg-emerald-600 text-white py-3.5 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">
@@ -246,7 +321,11 @@ export default function KelolaPendampingPage({ params }: { params: Promise<{ id:
               Selesai & Simpan
             </button>
             
-            <button onClick={handleHapusPeserta} className="w-full bg-rose-50 text-rose-600 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest text-center hover:bg-rose-100 transition-all flex items-center justify-center gap-2 border border-rose-100">
+            <button 
+              onClick={handleHapusPeserta} 
+              disabled={saving}
+              className="w-full bg-rose-50 text-rose-600 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest text-center hover:bg-rose-100 transition-all flex items-center justify-center gap-2 border border-rose-100 disabled:opacity-50"
+            >
               <Trash2 size={14} /> Hapus Peserta Permanen
             </button>
           </div>

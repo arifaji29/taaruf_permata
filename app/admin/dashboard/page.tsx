@@ -19,7 +19,8 @@ import {
   UserCheck,
   MessageSquare,
   HeartHandshake,
-  Award
+  Award,
+  Link as LinkIcon
 } from 'lucide-react'
 
 export default function AdminDashboard() {
@@ -42,6 +43,8 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     setLoading(true);
+    
+    // 1. Ambil Data Peserta & Peminat
     const { data: dataPeserta } = await supabase
       .from('peserta')
       .select(`
@@ -53,7 +56,47 @@ export default function AdminDashboard() {
       `)
       .order('created_at', { ascending: false });
 
-    if (dataPeserta) setPeserta(dataPeserta);
+    // 2. Ambil Data Hubungan (Status Taaruf)
+    // Kita butuh join tabel ini untuk mendapatkan nama pasangan & status
+    const { data: dataHubungan } = await supabase
+      .from('taaruf_pasangan')
+      .select(`
+        status,
+        ikhwan:peserta!ikhwan_id ( id, nama ),
+        akhwat:peserta!akhwat_id ( id, nama )
+      `)
+      .returns<Array<{ status: string; ikhwan: { id: string; nama: string } | null; akhwat: { id: string; nama: string } | null }>>();
+
+    // 3. Mapping Data (Gabungkan Peserta + Status)
+    if (dataPeserta) {
+      const mergedData = dataPeserta.map(p => {
+        // Cari hubungan dimana peserta ini terlibat
+        const relasi = dataHubungan?.find((r) => 
+          r.ikhwan?.id === p.id || r.akhwat?.id === p.id
+        );
+
+        let status_taaruf = null;
+        let nama_pasangan = null;
+
+        if (relasi) {
+          status_taaruf = relasi.status;
+          // Tentukan nama pasangan berdasarkan gender peserta ini
+          if (p.jenis_kelamin === 'Laki-laki') {
+            nama_pasangan = relasi.akhwat?.nama || null;
+          } else {
+            nama_pasangan = relasi.ikhwan?.nama || null;
+          }
+        }
+
+        return {
+          ...p,
+          status_taaruf, // Field buatan (computed)
+          nama_pasangan  // Field buatan (computed)
+        };
+      });
+
+      setPeserta(mergedData);
+    }
     setLoading(false);
   };
 
@@ -140,7 +183,6 @@ export default function AdminDashboard() {
         {/* GRID PESERTA */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredPeserta.map((p) => {
-            // LOGIKA FILTER LABEL TERTARIK: Hanya tampil jika status bukan Dilamar/Menikah
             const showTertarikLabel = p.peminat && p.peminat.length > 0 && p.status_taaruf !== 'Dilamar' && p.status_taaruf !== 'Menikah';
             const isMan = p.jenis_kelamin === 'Laki-laki';
 
@@ -173,18 +215,18 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                {/* LABEL STATUS PROGRESS (BARU) */}
+                {/* LABEL STATUS PROGRESS (Dari tabel taaruf_pasangan) */}
                 {p.status_taaruf && (
                   <div className={`absolute ${showTertarikLabel && !isMan ? 'top-12' : 'top-3'} right-3 z-10`}>
                     <div className={`px-2 py-1 rounded-lg text-[7px] font-black uppercase flex items-center gap-1 shadow-sm border ${
                       p.status_taaruf === 'Mediasi' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                      p.status_taaruf === 'Dilamar' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                      p.status_taaruf === 'Melamar' || p.status_taaruf === 'Dilamar' ? 'bg-rose-50 text-rose-600 border-rose-100' :
                       'bg-amber-50 text-amber-600 border-amber-100'
                     }`}>
                       {p.status_taaruf === 'Mediasi' ? <MessageSquare size={8} /> :
-                       p.status_taaruf === 'Dilamar' ? <HeartHandshake size={8} /> :
+                       p.status_taaruf === 'Melamar' || p.status_taaruf === 'Dilamar' ? <HeartHandshake size={8} /> :
                        <Award size={8} />}
-                      {isMan && p.status_taaruf === 'Dilamar' ? 'MELAMAR' : p.status_taaruf}
+                      {p.status_taaruf === 'Melamar' || p.status_taaruf === 'Dilamar' ? 'PROSES LAMAR' : p.status_taaruf}
                     </div>
                   </div>
                 )}
@@ -205,6 +247,16 @@ export default function AdminDashboard() {
                     <p className="text-[8px] font-black text-slate-400 uppercase mt-0.5">
                       {hitungUmur(p.tanggal_lahir)} thn • {p.kelompok || 'Kelompok -'}
                     </p>
+
+                    {/* INDIKATOR NAMA PASANGAN (Dari taaruf_pasangan) */}
+                    {p.nama_pasangan && (
+                      <div className="mt-2 flex items-center gap-1.5 py-1 px-2 bg-slate-50 border border-slate-100 rounded-lg w-fit">
+                        <LinkIcon size={8} className="text-slate-400" />
+                        <p className="text-[7px] font-black text-slate-500 uppercase tracking-tighter">
+                          Pasangan: <span className="text-emerald-600">{p.nama_pasangan}</span>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
